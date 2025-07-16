@@ -676,7 +676,7 @@ Map<String, dynamic> generateOpenApiMap(
 ```
 
 
-## Conclusion
+## Conclusion:
 
 The Serverpod Swagger generator provides a powerful and flexible way to create OpenAPI specifications for your Serverpod applications. By leveraging the various command-line arguments and features described in this documentation, you can create comprehensive API documentation that accurately reflects your endpoints, models, and security requirements.
 
