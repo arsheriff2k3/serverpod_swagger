@@ -6,6 +6,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/src/dart/ast/ast.dart' show ClassBodyImpl, NameWithTypeParameters;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:path/path.dart' as p;
@@ -720,9 +721,9 @@ class OpenApiSpecGenerator {
         type.isDartCoreInt ||
         type.isDartCoreDouble ||
         type.isDartCoreBool ||
-        type.element?.name == 'DateTime' ||
-        type.element?.name == 'ByteData' ||
-        type.element?.name == 'Uri' ||
+        type.element?.displayName == 'DateTime' ||
+        type.element?.displayName == 'ByteData' ||
+        type.element?.displayName == 'Uri' ||
         type.isDartCoreMap ||
         (type is InterfaceType && type.element is EnumElement);
   }
@@ -741,13 +742,14 @@ class OpenApiSpecGenerator {
     if (type.isDartCoreInt) return {'type': 'integer', 'format': 'int64'};
     if (type.isDartCoreDouble) return {'type': 'number', 'format': 'double'};
     if (type.isDartCoreBool) return {'type': 'boolean'};
-    if (type.element?.name == 'DateTime') {
+    // FIX: Use modern .element property for consistency
+    if (type.element?.displayName == 'DateTime') {
       return {'type': 'string', 'format': 'date-time'};
     }
-    if (type.element?.name == 'ByteData') {
+    if (type.element?.displayName == 'ByteData') {
       return {'type': 'string', 'format': 'byte'};
     }
-    if (type.element?.name == 'Uri') return {'type': 'string', 'format': 'uri'};
+    if (type.element?.displayName == 'Uri') return {'type': 'string', 'format': 'uri'};
 
     if (type is InterfaceType) {
       if (type.isDartCoreList) {
@@ -761,9 +763,10 @@ class OpenApiSpecGenerator {
         return {'type': 'object', 'additionalProperties': true};
       }
 
-      final className = type.element.name;
+      // FIX: Use modern .element property
+      final className = type.element.displayName;
       if (!_schemas.containsKey(className)) {
-        final libraryUri = type.element.library.source.uri;
+        final libraryUri = type.element.library.uri;
         if (libraryUri.scheme == 'package') {
           final packageName = libraryUri.pathSegments.first;
           if (packageName.startsWith('serverpod_') &&
@@ -874,14 +877,24 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   /// [node] The class declaration to visit.
   @override
   Future<void> visitClassDeclaration(ClassDeclaration node) async {
-    final superclass = node.extendsClause?.superclass.name2.lexeme;
+    final superclass = node.extendsClause?.superclass.name.lexeme;
     if (superclass == 'Endpoint') {
-      final rawName = node.name.lexeme.replaceAll('Endpoint', '');
+      // ClassNamePart is usually NameWithTypeParameters which has typeName
+      final namePart = node.namePart;
+      String? rawName;
+      if (namePart is NameWithTypeParameters) {
+        rawName = namePart.typeName.lexeme.replaceAll('Endpoint', '');
+      }
+      if (rawName == null) return;
+      
       _currentEndpointName = toCamelCase(rawName);
       print('    -> Found Endpoint: $_currentEndpointName');
-      for (final member in node.members) {
+      
+      // ClassBody.members is a getter that returns List<ClassMember>
+      final bodyImpl = node.body as ClassBodyImpl;
+      for (final member in bodyImpl.members) {
         if (member is MethodDeclaration) {
-          await visitMethodDeclaration(member);
+          await visitMethodDeclaration(member as MethodDeclaration);
         }
       }
       _currentEndpointName = null;
@@ -909,7 +922,28 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   @override
   Future<void> visitMethodDeclaration(MethodDeclaration node) async {
     if (_currentEndpointName == null) return;
-    final methodName = node.name.lexeme;
+
+    // =======================================================================
+    // THE CORRECT, STABLE, AND MODERN APPROACH
+    // =======================================================================
+
+    // 1. Get the fragment as recommended by the linter.
+    final methodFragment = node.declaredFragment;
+    if (methodFragment == null) return;
+
+    // 2. Get the generic element from the fragment.
+    final element = methodFragment.element;
+
+    // 3. THIS IS THE CRUCIAL STEP:
+    // Check if the element is a MethodElement. This safely "promotes" the
+    // variable so the compiler knows it has .parameters and .returnType.
+    if (element is! MethodElement) return;
+
+    // From here on, 'element' is a guaranteed MethodElement.
+    final methodName = element.name;
+    if (methodName == null) return;
+    
+    // final methodName = node.name.lexeme;
     if (methodName.startsWith('_') ||
         ['initialize', 'streamOpened', 'streamClosed', 'handleStreamMessage']
             .contains(methodName)) {
@@ -918,12 +952,13 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
 
     print('      -> Found Method: $methodName');
     final path = '/$_currentEndpointName/$methodName';
-    final apiParams = node.parameters?.parameters
-            .map((p) => p.declaredElement)
-            .where((p) => p != null && p.type.element?.name != 'Session')
-            .cast<ParameterElement>()
-            .toList() ??
-        [];
+
+
+    // FIX: Class name was changed from FormalParameterElement to ParameterElement
+      final apiParams = element.formalParameters
+        .where((p) => p.type.element?.displayName != 'Session')
+        .toList();
+        
     final bool isPostRequest =
         apiParams.any((p) => !generator._isPrimitiveType(p.type));
 
@@ -940,8 +975,11 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     if (isPostRequest) {
       final properties = <String, dynamic>{};
       for (final param in apiParams) {
-        properties[param.name] =
-            await generator.mapDartTypeToOpenApiSchema(param.type);
+        final paramName = param.name;
+        if (paramName != null) {
+          properties[paramName] =
+              await generator.mapDartTypeToOpenApiSchema(param.type);
+        }
       }
       if (properties.isNotEmpty) {
         operation['requestBody'] = {
@@ -956,13 +994,16 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     } else {
       final openApiParameters = <Map<String, dynamic>>[];
       for (final param in apiParams) {
-        openApiParameters.add({
-          'name': param.name,
-          'in': 'query',
-          'required':
-              param.type.nullabilitySuffix != NullabilitySuffix.question,
-          'schema': await generator.mapDartTypeToOpenApiSchema(param.type),
-        });
+        final paramName = param.name;
+        if (paramName != null) {
+          openApiParameters.add({
+            'name': paramName,
+            'in': 'query',
+            'required':
+                param.type.nullabilitySuffix != NullabilitySuffix.question,
+            'schema': await generator.mapDartTypeToOpenApiSchema(param.type),
+          });
+        }
       }
       if (openApiParameters.isNotEmpty) {
         operation['parameters'] = openApiParameters;
@@ -970,7 +1011,8 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
       pathItem['get'] = operation;
     }
 
-    final DartType? returnTypeFromElement = node.declaredElement?.returnType;
+    // FIX: Use .declaredElement which is more robust
+    final DartType? returnTypeFromElement = node.declaredFragment?.element.returnType;
     Map<String, dynamic> responseSchema = {};
     if (returnTypeFromElement != null) {
       DartType finalType = returnTypeFromElement;
@@ -979,7 +1021,8 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
           finalType.typeArguments.isNotEmpty) {
         finalType = finalType.typeArguments.first;
       }
-      if (!finalType.isDartCoreNull && finalType.element?.name != 'void') {
+      // FIX: Use modern .element property
+      if (!finalType.isDartCoreNull && finalType.element?.displayName != 'void') {
         responseSchema = await generator.mapDartTypeToOpenApiSchema(finalType);
       }
     }
@@ -996,4 +1039,5 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
 
     generator._paths[path] = pathItem;
   }
+
 }

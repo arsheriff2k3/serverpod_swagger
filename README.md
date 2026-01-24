@@ -11,11 +11,11 @@ A package to automatically generate and serve Swagger UI for a Serverpod backend
 - Intelligent HTTP method detection based on parameter types
 - Comprehensive model parsing and schema generation
 - Flexible authentication configuration
-- Compatible with Serverpod 2.8.0
+- Compatible with Serverpod 3.2.3
 
 ## Requirements
 
-- Serverpod 2.8.0 or higher
+- Serverpod 3.2.3 or higher
 - Dart 3.0.0 or higher
 
 ## Installation
@@ -24,7 +24,7 @@ Add the package to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  serverpod_swagger: ^0.1.3
+  serverpod_swagger: ^0.3.0
 ```
 
 Then run:
@@ -132,8 +132,9 @@ Future<void> run(List<String> args) async {
   final swaggerRoute = SwaggerUIRoute(projectRoot);
   
   // Add the route to your server
-  // IMPORTANT: The path must end with a trailing slash
-  pod.webServer.addRoute(swaggerRoute, '/swagger*');
+  // IMPORTANT: For Serverpod 3.2.3+, use '/**' for the tail match
+  // and ensure this is added BEFORE any catch-all static routes ('/*')
+  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
 
   // Start the server
   await pod.start();

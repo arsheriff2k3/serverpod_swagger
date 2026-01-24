@@ -65,7 +65,9 @@ export default function Home() {
             <h3 className="text-lg font-semibold mb-2">1. Add the package to your pubspec.yaml</h3>
             <CodeBlock
               language="yaml"
-              code={`dependencies:\n  serverpod: ^2.8.0\n  serverpod_swagger: ^0.1.5`}
+              code={`dependencies:
+  serverpod: ^3.2.3
+  serverpod_swagger: ^0.3.0`}
               fileName="pubspec.yaml"
             />
           </div>
@@ -74,7 +76,24 @@ export default function Home() {
             <h3 className="text-lg font-semibold mb-2">2. Add the Swagger UI route to your server</h3>
             <CodeBlock
               language="dart"
-              code={`import 'dart:io';\nimport 'package:serverpod/serverpod.dart';\nimport 'package:serverpod_swagger/serverpod_swagger.dart';\n\nfuture<void> main() async {\n  // Create the server\n  final pod = Serverpod(\n    // ... your configuration\n  );\n  \n  // Add the Swagger UI route\n  pod.webServer.addRoute(\n    SwaggerUIRoute(\n      Directory(Directory.current.path),\n      mountPath: '/swagger/',\n    ),\n  );\n  \n  // Start the server\n  await pod.start();\n}`}
+              code={`import 'dart:io';
+import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_swagger/serverpod_swagger.dart';
+
+void run(List<String> args) async {
+  final pod = Serverpod(
+    args,
+    Protocol(),
+    Endpoints(),
+  );
+  
+  // Add the Swagger UI route
+  final swaggerRoute = SwaggerUIRoute(Directory.current);
+  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+  
+  // Start the server
+  await pod.start();
+}`}
               fileName="main.dart"
             />
           </div>
@@ -111,7 +130,7 @@ export default function Home() {
           <li>Customizable authentication schemes</li>
           <li>HTTP method customization</li>
           <li>Live-reloading during development</li>
-          <li>Compatible with Serverpod 2.8.0 and higher</li>
+          <li>Compatible with Serverpod 3.2.3 and higher</li>
         </ul>
       </section>
     </div>

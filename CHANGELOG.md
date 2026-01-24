@@ -1,3 +1,12 @@
+## 0.3.0
+
+- **BREAKING**: Upgraded to Serverpod 3.2.3 (from 2.9.0)
+- Updated analyzer package to 10.0.1 (from 7.5.2)
+- Migrated from deprecated analyzer APIs (element3→element, Element2→Element, library2→library, name3→name)
+- Updated all dependencies to latest versions (path 1.9.0, test 1.29.0, lints 6.0.0)
+- Improved compatibility with modern Dart analyzer
+- Requires Serverpod 3.2.3 or higher
+
 ## 0.1.7
 
 - Updated version number for maintenance release

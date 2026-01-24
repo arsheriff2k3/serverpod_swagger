@@ -51,10 +51,10 @@ class SwaggerUIRoute extends Route {
 
   /// Handles incoming HTTP requests and serves the Swagger UI or API specification.
   ///
-  /// Returns true if the request was handled by this route, false otherwise.
+  /// Returns a Response indicating how the request was handled.
   @override
-  Future<bool> handleCall(Session session, HttpRequest request) async {
-    final path = request.uri.path;
+  Future<Response> handleCall(Session session, Request request) async {
+    final path = request.url.path;
 
     // --- ORDER IS CRITICAL: Most specific paths first ---
 
@@ -62,48 +62,50 @@ class SwaggerUIRoute extends Route {
     if (path == _specPath) {
       session.log('Serving LIVE version of API spec at $path');
 
-      // --- FIX FOR BROWSER CACHING ---
-      // Add headers to tell the browser to NEVER cache this specific file.
-      request.response.headers
-          .set('Cache-Control', 'no-store, no-cache, must-revalidate');
-      request.response.headers.set('Pragma', 'no-cache');
-      request.response.headers.set('Expires', '0');
-      // --- END OF FIX ---
-
       // Read the file from disk ON EVERY REQUEST. This solves server-side caching.
       final specFile = File(p.join(_projectRoot.path, 'apispec.json'));
       if (await specFile.exists()) {
-        request.response.headers.contentType = ContentType.json;
-        request.response.write(await specFile.readAsString());
+        final content = await specFile.readAsString();
+        
+        // Build headers with cache control
+        final headers = Headers.build((mh) {
+          mh.cacheControl = CacheControlHeader(
+            noCache: true,
+            noStore: true,
+            mustRevalidate: true,
+          );
+          mh['Pragma'] = ['no-cache'];
+          mh['Expires'] = ['0'];
+        });
+        
+        return Response.ok(
+          body: Body.fromString(content, mimeType: MimeType.json),
+          headers: headers,
+        );
       } else {
-        request.response.statusCode = HttpStatus.notFound;
-        request.response
-            .write('Error: apispec.json not found at ${specFile.path}');
+        return Response.notFound(
+          body: Body.fromString(
+            'Error: apispec.json not found at ${specFile.path}',
+          ),
+        );
       }
-
-      await request.response.close();
-      return true; // We handled this request.
     }
 
     // 2. Handle the request for the main UI page.
     if (matchesMountPath(path, _mountPath)) {
       session.log('Serving Swagger UI main page at $path');
-      request.response.headers.contentType = ContentType.html;
-      request.response.write(_swaggerHtml);
-      await request.response.close();
-      return true;
+      return Response.ok(
+        body: Body.fromString(_swaggerHtml, mimeType: MimeType.html),
+      );
     }
 
     // // 3. Handle the redirect from '/swagger' to '/swagger/'.
     // if (path == _redirectPath) {
     //   session.log('Redirecting from $path to $_mountPath');
-    //   request.response.statusCode = HttpStatus.movedPermanently;
-    //   request.response.headers.set('Location', _mountPath);
-    //   await request.response.close();
-    //   return true;
+    //   return Response.movedPermanently(Uri.parse(_mountPath));
     // }
 
-    return false;
+    return Response.notFound();
   }
 
   /// Generates the HTML content for the Swagger UI page.

@@ -6,133 +6,188 @@ export default function Examples() {
   return (
     <div className="prose dark:prose-invert">
       <h1>Serverpod Swagger Examples</h1>
-      
+
       <p>
         This page provides practical examples of how to use Serverpod Swagger in different scenarios.
         Each example includes code snippets and explanations to help you implement Swagger UI in your Serverpod application.
       </p>
 
       <h2>Basic Example</h2>
-      
+
       <p>
         This example shows the minimal setup required to add Swagger UI to your Serverpod server.
       </p>
-      
+
       <CodeBlock
         language="dart"
-        code={`import 'dart:io';\nimport 'package:serverpod/serverpod.dart';\nimport 'package:serverpod_swagger/serverpod_swagger.dart';\n\nfuture<void> main() async {\n  // Create the server\n  final pod = Serverpod(\n    args,\n    [\n      // Your endpoint classes\n    ],\n  );\n  \n  // Add the Swagger UI route\n  pod.webServer.addRoute(\n    SwaggerUIRoute(\n      Directory(Directory.current.path),\n      mountPath: '/swagger/',\n    ),\n  );\n  \n  // Start the server\n  await pod.start();\n}`}
+        code={`import 'dart:io';
+import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_swagger/serverpod_swagger.dart';
+
+void run(List<String> args) async {
+  final pod = Serverpod(
+    args,
+    Protocol(),
+    Endpoints(),
+  );
+  
+  // Add the Swagger UI route
+  final swaggerRoute = SwaggerUIRoute(Directory.current);
+  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+  
+  // Start the server
+  await pod.start();
+}`}
         fileName="main.dart"
       />
-      
+
       <p>
         With this setup, you can access the Swagger UI at <code>http://localhost:8082/swagger/</code> after generating the OpenAPI specification with <code>dart run serverpod_swagger:generate</code>.
       </p>
 
-      <h2>Complete Example with Authentication</h2>
-      
+      <h2>Complete Server Example</h2>
+
       <p>
-        This example shows a more complete setup with authentication, custom styling, and multiple API versions.
+        This example shows a more complete server setup with multiple routes and Swagger UI.
       </p>
-      
-      <h3>Step 1: Create security definitions</h3>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:\n  - BearerAuth: []\n\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT\n      description: Enter your JWT token in the format 'Bearer {token}'`}
-        fileName="openapi_security.yaml"
-      />
-      
-      <h3>Step 2: Create custom CSS for Swagger UI</h3>
-      
-      <CodeBlock
-        language="css"
-        code={`.swagger-ui .topbar {\n  background-color: #1a365d;\n}\n\n.swagger-ui .info .title {\n  color: #2c5282;\n}\n\n.swagger-ui .opblock-tag {\n  background-color: #ebf8ff;\n}\n\n.swagger-ui .opblock.opblock-get {\n  border-color: #4299e1;\n  background-color: #ebf8ff;\n}\n\n.swagger-ui .opblock.opblock-post {\n  border-color: #48bb78;\n  background-color: #f0fff4;\n}`}
-        fileName="web/custom/swagger.css"
-      />
-      
-      <h3>Step 3: Configure the server with Swagger UI</h3>
-      
+
       <CodeBlock
         language="dart"
-        code={`import 'dart:io';\nimport 'package:serverpod/serverpod.dart';\nimport 'package:serverpod_swagger/serverpod_swagger.dart';\n\nfuture<void> main() async {\n  // Create the server\n  final pod = Serverpod(\n    args,\n    [\n      // Your endpoint classes\n    ],\n  );\n  \n  // Add the Swagger UI route for the current version\n  pod.webServer.addRoute(\n    SwaggerUIRoute(\n      Directory(Directory.current.path),\n      mountPath: '/swagger/',\n      apiSpecPath: 'apispec.json',\n      title: 'API Documentation (Current)',\n      customCssUrl: '/custom/swagger.css',\n      persistAuthorization: true,\n      tryItOutEnabled: true,\n    ),\n  );\n  \n  // Add the Swagger UI route for the v1 version\n  pod.webServer.addRoute(\n    SwaggerUIRoute(\n      Directory(Directory.current.path),\n      mountPath: '/swagger/v1/',\n      apiSpecPath: 'apispec.v1.json',\n      title: 'API Documentation (v1)',\n      customCssUrl: '/custom/swagger.css',\n      persistAuthorization: true,\n      tryItOutEnabled: true,\n    ),\n  );\n  \n  // Start the server\n  await pod.start();\n}`}
+        code={`import 'dart:io';
+import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_swagger/serverpod_swagger.dart';
+
+void run(List<String> args) async {
+  final pod = Serverpod(
+    args,
+    Protocol(),
+    Endpoints(),
+  );
+  
+  // Add Swagger UI route
+  final swaggerRoute = SwaggerUIRoute(Directory.current);
+  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+  
+  // Add other routes
+  pod.webServer.addRoute(RouteRoot(), '/');
+  pod.webServer.addRoute(
+    StaticRoute.directory(Directory('static')),
+    '/*',
+  );
+  
+  // Start the server
+  await pod.start();
+}`}
         fileName="main.dart"
       />
-      
-      <h3>Step 4: Generate OpenAPI specifications for different versions</h3>
-      
+
+      <h2>Generating OpenAPI Specification</h2>
+
+      <h3>Basic Generation</h3>
+
       <CodeBlock
         language="bash"
-        code={`# Generate current version\ndart run serverpod_swagger:generate --output=apispec.json --title="My API" --version="2.0.0"\n\n# Generate v1 version\ndart run serverpod_swagger:generate --output=apispec.v1.json --title="My API (v1)" --version="1.0.0"`}
+        code={`# Generate OpenAPI specification
+dart run serverpod_swagger:generate`}
         showLineNumbers={false}
       />
 
-      <h2>Example with Custom Schemas</h2>
-      
-      <p>
-        This example shows how to define custom schemas for complex types that aren't automatically handled by the generator.
-      </p>
-      
-      <h3>Step 1: Create custom schema definitions</h3>
-      
+      <h3>With Custom Options</h3>
+
       <CodeBlock
-        language="yaml"
-        code={`schemas:\n  GeoPoint:\n    type: object\n    properties:\n      latitude:\n        type: number\n        format: double\n      longitude:\n        type: number\n        format: double\n    required:\n      - latitude\n      - longitude\n  \n  Address:\n    type: object\n    properties:\n      street:\n        type: string\n      city:\n        type: string\n      state:\n        type: string\n      zipCode:\n        type: string\n      country:\n        type: string\n      location:\n        $ref: '#/components/schemas/GeoPoint'\n    required:\n      - street\n      - city\n      - state\n      - zipCode\n      - country`}
-        fileName="openapi_schemas.yaml"
-      />
-      
-      <h3>Step 2: Use the custom types in your endpoints</h3>
-      
-      <CodeBlock
-        language="dart"
-        code={`/// Get nearby locations\n/// \n/// Returns a list of locations near the specified coordinates\n@Route('/locations/nearby')\nFuture<List<Location>> getNearbyLocations(\n  Session session,\n  @Param('latitude') double latitude,\n  @Param('longitude') double longitude,\n  @Param('radius') double radius,\n);\n\n/// Add a new address\n/// \n/// Adds a new address to the user's profile\n@Route('/users/addresses')\nFuture<Address> addAddress(\n  Session session,\n  @Param('address') Address address,\n);`}
-        fileName="location_endpoint.dart"
+        language="bash"
+        code={`# Specify base URL
+dart run serverpod_swagger:generate --base-url=http://localhost:8080
+
+# Add authentication
+dart run serverpod_swagger:generate --auth=jwt
+
+# Customize HTTP methods
+dart run serverpod_swagger:generate --http-method=users/create:post
+
+# Update existing spec
+dart run serverpod_swagger:generate --update`}
+        showLineNumbers={false}
       />
 
-      <h2>Example with File Upload</h2>
-      
-      <p>
-        This example shows how to document file upload endpoints in your OpenAPI specification.
-      </p>
-      
-      <h3>Step 1: Create a custom schema for file uploads</h3>
-      
+      <h2>Authentication Example</h2>
+
+      <h3>Step 1: Generate spec with authentication</h3>
+
       <CodeBlock
-        language="yaml"
-        code={`paths:\n  /users/avatar:\n    post:\n      summary: Upload user avatar\n      description: Uploads a new avatar image for the user\n      operationId: uploadAvatar\n      security:\n        - BearerAuth: []\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              properties:\n                avatar:\n                  type: string\n                  format: binary\n                  description: The avatar image file\n              required:\n                - avatar\n      responses:\n        '200':\n          description: Avatar uploaded successfully\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  success:\n                    type: boolean\n                  avatarUrl:\n                    type: string\n        '400':\n          description: Invalid file format\n        '401':\n          description: Unauthorized`}
-        fileName="openapi_file_upload.yaml"
-      />
-      
-      <h3>Step 2: Implement the file upload endpoint</h3>
-      
-      <CodeBlock
-        language="dart"
-        code={`/// Upload user avatar\n/// \n/// Uploads a new avatar image for the user\n@Route('/users/avatar')\nFuture<Map<String, dynamic>> uploadAvatar(Session session) async {\n  // Get the uploaded file from the request\n  final request = session.request!;\n  if (!request.isMultipart) {\n    session.response.statusCode = 400;\n    return {'success': false, 'error': 'Not a multipart request'};\n  }\n\n  // Process the multipart request\n  await for (final part in request.multipartFormData) {\n    if (part.name == 'avatar' && part.filename != null) {\n      // Read the file data\n      final bytes = await part.readBytes();\n      \n      // Save the file (implementation depends on your storage solution)\n      final avatarUrl = await saveAvatarFile(bytes, part.filename!);\n      \n      return {\n        'success': true,\n        'avatarUrl': avatarUrl,\n      };\n    }\n  }\n\n  session.response.statusCode = 400;\n  return {'success': false, 'error': 'No avatar file found'};\n}`}
-        fileName="user_endpoint.dart"
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=bearer --base-url=http://localhost:8080`}
+        showLineNumbers={false}
       />
 
-      <h2>More Examples</h2>
-      
-      <p>Explore more specific examples:</p>
-      
+      <h3>Step 2: Use the Swagger UI to test authenticated endpoints</h3>
+
+      <p>
+        After generating the spec with authentication, you can use the "Authorize" button in Swagger UI to provide your authentication token.
+      </p>
+
+      <h2>Custom HTTP Methods Example</h2>
+
+      <p>
+        By default, all endpoints use POST. You can customize HTTP methods for specific endpoints:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`# Make specific endpoints use different HTTP methods
+dart run serverpod_swagger:generate \\
+  --http-method=users/get:get \\
+  --http-method=users/create:post \\
+  --http-method=users/update:put \\
+  --http-method=users/delete:delete`}
+        showLineNumbers={false}
+      />
+
+      <h2>Development Workflow</h2>
+
+      <p>
+        During development, you can use this workflow for live updates:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`# Terminal 1: Run your server
+dart run bin/main.dart
+
+# Terminal 2: Regenerate spec when you make changes
+dart run serverpod_swagger:generate
+
+# Then refresh your browser at http://localhost:8082/swagger/`}
+        showLineNumbers={false}
+      />
+
+      <p>
+        The Swagger UI route automatically re-reads the <code>apispec.json</code> file on every request, so you'll see your changes immediately after regenerating the spec.
+      </p>
+
+      <h2>More Resources</h2>
+
+      <p>For more detailed information, check out:</p>
+
       <ul>
         <li>
-          <Link href="/examples/authentication" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Authentication Examples
+          <Link href="/docs/basic-usage" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            Basic Usage Guide
           </Link>
         </li>
         <li>
-          <Link href="/examples/custom-schemas" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Custom Schema Examples
+          <Link href="/docs/configuration/openapi-generation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            OpenAPI Generation Options
           </Link>
         </li>
         <li>
-          <Link href="/examples/response-examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Response Examples
+          <Link href="/docs/configuration/authentication" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            Authentication Configuration
           </Link>
         </li>
         <li>
-          <Link href="/examples/pagination" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Pagination Examples
+          <Link href="/api-reference/cli-options" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            CLI Options Reference
           </Link>
         </li>
       </ul>

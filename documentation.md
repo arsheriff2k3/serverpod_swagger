@@ -378,7 +378,9 @@ void main(List<String> args) async {
   final swaggerRoute = SwaggerUIRoute(projectRoot);
   
   // Add the route to your web server
-  pod.webServer.addRoute(swaggerRoute, '/swagger/');
+  // IMPORTANT: For Serverpod 3.2.3+, use '/**' for the tail match
+  // and ensure this is added BEFORE any catch-all static routes ('/*').
+  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
   
   // Start the server
   await pod.start();
