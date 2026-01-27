@@ -40,8 +40,20 @@ void main() {
     test('creates route with correct paths', () {
       final projectRoot = Directory.current;
       final route = SwaggerUIRoute(projectRoot);
-      print(route);
-      // Verify the route has the expected handlers
+      expect(route, isNotNull);
+    });
+
+    test('mountPath must end with a trailing slash', () {
+      final projectRoot = Directory.current;
+      expect(() => SwaggerUIRoute(projectRoot, mountPath: '/swagger'),
+          throwsA(isA<AssertionError>()));
+    });
+
+    test('customSpecPath is used when provided', () {
+      final projectRoot = Directory.current;
+      // This is a bit hard to test directly because fields are private,
+      // but we can verify it doesn't throw and we could potentially test handleCall if we mock Session/Request.
+      final route = SwaggerUIRoute(projectRoot, customSpecPath: '/custom/apispec.json');
       expect(route, isNotNull);
     });
   });

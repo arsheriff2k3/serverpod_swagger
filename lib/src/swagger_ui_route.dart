@@ -28,15 +28,19 @@ class SwaggerUIRoute extends Route {
   ///
   /// [projectRoot] is the directory where the apispec.json file is located.
   /// [mountPath] is the URL path where the Swagger UI will be served, must end with a slash.
-  SwaggerUIRoute(Directory projectRoot, {String mountPath = '/swagger/'})
-      : assert(mountPath.endsWith('/'),
+  /// [customSpecPath] allows overriding the URL from which the Swagger UI loads the API specification.
+  /// If not provided, it defaults to 'apispec.json' relative to the [mountPath].
+  SwaggerUIRoute(
+    Directory projectRoot, {
+    String mountPath = '/swagger/',
+    String? customSpecPath,
+  })  : assert(mountPath.endsWith('/'),
             'mountPath must end with a trailing slash.'),
         _projectRoot = projectRoot,
         _mountPath = mountPath,
-        // _redirectPath = mountPath.substring(0, mountPath.length - 1),
-        _specPath = p.join(mountPath, 'apispec.json'),
+        _specPath = customSpecPath ?? p.join(mountPath, 'apispec.json'),
         // The HTML is static, so we can generate it once.
-        _swaggerHtml = _getSwaggerHtml();
+        _swaggerHtml = _getSwaggerHtml(customSpecPath ?? 'apispec.json');
 
   bool matchesMountPath(String path, String mountPath) {
     // Remove any trailing slash for comparison
@@ -99,11 +103,13 @@ class SwaggerUIRoute extends Route {
       );
     }
 
-    // // 3. Handle the redirect from '/swagger' to '/swagger/'.
-    // if (path == _redirectPath) {
-    //   session.log('Redirecting from $path to $_mountPath');
-    //   return Response.movedPermanently(Uri.parse(_mountPath));
-    // }
+    // 3. Handle the redirect from 'path' to 'path/' (e.g., '/swagger' to '/swagger/').
+    // This is important because relative paths like 'apispec.json' inside the HTML
+    // depend on the browser being at the directory level.
+    if (path == _mountPath.substring(0, _mountPath.length - 1)) {
+      session.log('Redirecting from $path to $_mountPath');
+      return Response.movedPermanently(Uri.parse(_mountPath));
+    }
 
     return Response.notFound();
   }
@@ -112,8 +118,8 @@ class SwaggerUIRoute extends Route {
   ///
   /// This helper is static and can be called from the constructor.
   /// Returns a complete HTML document with the Swagger UI configured to load
-  /// the API specification from the relative path 'apispec.json'.
-  static String _getSwaggerHtml() {
+  /// the API specification from the provided [specUrl].
+  static String _getSwaggerHtml(String specUrl) {
     return '''
 <!DOCTYPE html>
 <html lang="en">
@@ -129,7 +135,7 @@ class SwaggerUIRoute extends Route {
   <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
-        url: "apispec.json", // Relative URL is robust
+        url: "$specUrl",
         dom_id: '#swagger-ui',
         deepLinking: true,
         // Enable all OAuth-related functionality

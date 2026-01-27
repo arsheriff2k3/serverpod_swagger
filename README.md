@@ -129,12 +129,25 @@ Future<void> run(List<String> args) async {
   final projectRoot = Directory.current;
   
   // Create a SwaggerUIRoute
-  final swaggerRoute = SwaggerUIRoute(projectRoot);
+  // - projectRoot: The directory containing apispec.json
+  // - mountPath: (Optional) The URL path where Swagger UI is served (default: '/swagger/')
+  // - customSpecPath: (Optional) The URL from which Swagger UI loads apispec.json
+  final swaggerRoute = SwaggerUIRoute(
+    projectRoot,
+    mountPath: '/custom_path/swagger/',
+    customSpecPath: '/apispec.json', // Direct link to the spec at root
+  );
   
-  // Add the route to your server
+  // Add the Swagger UI route
   // IMPORTANT: For Serverpod 3.2.3+, use '/**' for the tail match
   // and ensure this is added BEFORE any catch-all static routes ('/*')
-  pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+  pod.webServer.addRoute(swaggerRoute, '/custom_path/swagger/**');
+
+  // IMPORTANT: When using a custom mount path, you also need to serve
+  // the apispec.json file at the root (or wherever you specified in customSpecPath)
+  final apiSpecRoute = ApiSpecRoute(projectRoot);
+  pod.webServer.addRoute(apiSpecRoute, '/apispec.json');
+
 
   // Start the server
   await pod.start();
@@ -147,7 +160,7 @@ After starting your server, you can access the Swagger UI at:
 http://localhost:8082/swagger/
 ```
 
-**IMPORTANT: Note the trailing slash in the URL - this is required for the Swagger UI to work correctly.**
+**IMPORTANT: The package automatically handles redirection from `/swagger` to `/swagger/`. Using a trailing slash is best practice to ensure relative paths (like `apispec.json`) resolve correctly in the browser.**
 
 ## How it works
 
@@ -268,10 +281,14 @@ This ensures that only your actual API methods are included in the documentation
 ### Common Issues
 
 1. **"This localhost page can't be found" error**:
-   - Make sure you're accessing the URL with a trailing slash: `/swagger/` not `/swagger`
    - Verify that your server is running and the web server port is correct (usually 8082)
    - Check server logs for any error messages related to file paths
-
+   - The package handles redirection from `/swagger` to `/swagger/` automatically.
+   
+2. **Swagger UI fails to load apispec.json when using custom paths**:
+   - If mounting Swagger UI at a custom path (e.g., `/custom/swagger/`), it will try to load `apispec.json` relative to that path.
+   - If your `apispec.json` is at the root, provide `customSpecPath: '/apispec.json'` to the `SwaggerUIRoute` constructor.
+   - Example: `SwaggerUIRoute(projectRoot, mountPath: '/custom/swagger/', customSpecPath: '/apispec.json')`
 2. **Static files not found**:
    - If you see errors about missing static files in the logs, make sure the package is properly installed
    - Try running `dart pub get` again to ensure all dependencies are correctly resolved

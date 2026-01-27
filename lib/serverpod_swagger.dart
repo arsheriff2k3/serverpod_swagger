@@ -6,3 +6,4 @@ library serverpod_swagger;
 
 export 'src/serverpod_swagger_base.dart';
 export 'src/swagger_ui_route.dart';
+export 'src/apispec_route.dart';

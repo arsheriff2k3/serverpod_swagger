@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
       { title: 'OpenAPI Generation', href: '/docs/configuration/openapi-generation' },
       { title: 'Swagger UI Options', href: '/docs/configuration/swagger-ui-options' },
       { title: 'Authentication', href: '/docs/configuration/authentication' },
+      { title: 'Custom Paths', href: '/docs/configuration/custom-paths' },
     ],
   },
   {

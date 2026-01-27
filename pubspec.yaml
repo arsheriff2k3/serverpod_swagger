@@ -1,6 +1,6 @@
 name: serverpod_swagger
 description: A package to automatically generate and serve Swagger UI for a Serverpod backend.
-version: 0.3.0 # Major upgrade: Serverpod 3.2.3, analyzer 10.0.1
+version: 0.3.1 # Added custom path support, ApiSpecRoute, automatic redirection
 homepage: https://serverpodswagger.vercel.app/
 repository: https://github.com/arsheriff2k3/serverpod_swagger
 

@@ -73,7 +73,94 @@ pod.webServer.addRoute(swaggerRoute, '/swagger/**');  // This must match the URL
         <li>Verify that there are no firewall or network issues preventing access to the server.</li>
       </ul>
 
+      <h2>API Specification Not Found (Custom Paths)</h2>
+
+      <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-4 my-4">
+        <p className="text-red-800 dark:text-red-200 text-sm font-medium">
+          Problem: Swagger UI shows "Failed to load API definition" or "Not Found /apispec.json" when using custom mount paths.
+        </p>
+      </div>
+
+      <h3>Possible Causes and Solutions</h3>
+
+      <h4>1. Missing ApiSpecRoute when using customSpecPath</h4>
+
+      <p>
+        If you're using a custom mount path and specified <code>customSpecPath</code>, you must also add an <code>ApiSpecRoute</code> to serve the file at that path.
+      </p>
+
+      <CodeBlock
+        language="dart"
+        code={`// ❌ INCORRECT - Missing ApiSpecRoute
+final swaggerRoute = SwaggerUIRoute(
+  Directory.current,
+  mountPath: '/api/docs/',
+  customSpecPath: '/apispec.json',
+);
+pod.webServer.addRoute(swaggerRoute, '/api/docs/**');
+
+// ✅ CORRECT - Includes ApiSpecRoute
+final swaggerRoute = SwaggerUIRoute(
+  Directory.current,
+  mountPath: '/api/docs/',
+  customSpecPath: '/apispec.json',
+);
+pod.webServer.addRoute(swaggerRoute, '/api/docs/**');
+
+// Add this route to serve apispec.json at root
+final apiSpecRoute = ApiSpecRoute(Directory.current);
+pod.webServer.addRoute(apiSpecRoute, '/apispec.json');`}
+        fileName="main.dart"
+      />
+
+      <h4>2. Incorrect projectRoot directory</h4>
+
+      <p>
+        The <code>projectRoot</code> parameter should point to the directory containing your <code>apispec.json</code> file.
+      </p>
+
+      <ul>
+        <li>Verify that <code>apispec.json</code> exists in the directory you're passing to <code>SwaggerUIRoute</code></li>
+        <li>Use <code>Directory.current</code> if the file is in your project root</li>
+        <li>Check server logs to see what path it's trying to read from</li>
+      </ul>
+
+      <h4>3. Route pattern mismatch</h4>
+
+      <p>
+        Ensure your route pattern matches your mount path configuration.
+      </p>
+
+      <CodeBlock
+        language="dart"
+        code={`// ❌ INCORRECT - Pattern doesn't match mountPath
+final swaggerRoute = SwaggerUIRoute(
+  Directory.current,
+  mountPath: '/api/docs/',
+);
+pod.webServer.addRoute(swaggerRoute, '/swagger/**'); // Wrong!
+
+// ✅ CORRECT - Pattern matches mountPath
+final swaggerRoute = SwaggerUIRoute(
+  Directory.current,
+  mountPath: '/api/docs/',
+);
+pod.webServer.addRoute(swaggerRoute, '/api/docs/**'); // Correct!`}
+        fileName="main.dart"
+      />
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-4">
+        <p className="text-blue-800 dark:text-blue-200 text-sm">
+          <strong>Tip:</strong> For most cases, use the default configuration without custom paths. Only use custom paths if you have a specific requirement. See the{' '}
+          <Link href="/docs/configuration/custom-paths" className="underline">
+            Custom Paths documentation
+          </Link>{' '}
+          for more details.
+        </p>
+      </div>
+
       <h2>OpenAPI Generation Issues</h2>
+
 
       <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-4 my-4">
         <p className="text-red-800 dark:text-red-200 text-sm font-medium">
