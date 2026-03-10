@@ -6,7 +6,8 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/src/dart/ast/ast.dart' show ClassBodyImpl, NameWithTypeParameters;
+import 'package:analyzer/src/dart/ast/ast.dart'
+    show ClassBodyImpl, NameWithTypeParameters;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:path/path.dart' as p;
@@ -450,18 +451,18 @@ Map<String, dynamic> applyCliArguments({
 // ===================================================================
 // (The OpenApiSpecGenerator and _EndpointVisitor classes from the previous answer go here, unchanged)
 class OpenApiSpecGenerator {
-  /// The root path of the project being analyzed.  
+  /// The root path of the project being analyzed.
   final String projectPath;
-  
+
   /// The analysis context collection used for parsing Dart files.
   final AnalysisContextCollection _collection;
 
   /// Stores the OpenAPI paths information generated during analysis.
   final Map<String, dynamic> _paths = {};
-  
+
   /// Stores the OpenAPI schema definitions generated during analysis.
   final Map<String, dynamic> _schemas = {};
-  
+
   /// Public getter for accessing the generated schemas.
   Map<String, dynamic> get schemas => _schemas;
 
@@ -469,18 +470,18 @@ class OpenApiSpecGenerator {
   final Map<String, String> _packageLocations = {};
 
   /// Creates a new OpenAPI specification generator for the given project path.
-  /// 
+  ///
   /// [projectPath] is the root directory of the Serverpod project to analyze.
   OpenApiSpecGenerator(this.projectPath)
       : _collection = AnalysisContextCollection(includedPaths: [projectPath]);
 
   /// Generates the complete OpenAPI specification by analyzing the project.
-  /// 
+  ///
   /// This is the main entry point for the generation process. It performs the following steps:
   /// 1. Initializes package locations by reading the package configuration
   /// 2. Parses all local model files (.yaml and .spy.yaml) in the project
   /// 3. Parses all endpoint Dart files to extract API information
-  /// 
+  ///
   /// The results are stored in the [_paths] and [_schemas] maps, which can be
   /// accessed via [toJson] to get the complete OpenAPI specification.
   Future<void> generate() async {
@@ -505,7 +506,8 @@ class OpenApiSpecGenerator {
 
     // Step 3: Parse endpoints, which triggers on-demand parsing of package models.
     print('\n[3/3] Parsing Dart endpoint files...');
-    final endpointsPath = p.join(projectPath, 'lib', 'src', 'endpoints');
+    final endpointsPath =
+        p.join(projectPath, 'lib', 'src', 'generated', 'endpoints');
     final endpointsDir = Directory(endpointsPath);
     if (endpointsDir.existsSync()) {
       final endpointFiles = endpointsDir
@@ -525,7 +527,7 @@ class OpenApiSpecGenerator {
   }
 
   /// Initializes the generator by mapping package names to their file system locations.
-  /// 
+  ///
   /// Reads the package_config.json file to determine the locations of all dependencies,
   /// which is necessary for resolving references to models in external packages.
   Future<void> _initialize() async {
@@ -552,11 +554,11 @@ class OpenApiSpecGenerator {
   }
 
   /// Parses a YAML model file and adds its schema to the OpenAPI specification.
-  /// 
+  ///
   /// Extracts class information, fields, and their types from the YAML file and
   /// converts them to OpenAPI schema definitions. Also handles dependencies by
   /// recursively parsing referenced model files.
-  /// 
+  ///
   /// [path] The file system path to the YAML model file to parse.
   Future<void> parseYamlModelFile(String path) async {
     try {
@@ -608,13 +610,13 @@ class OpenApiSpecGenerator {
   }
 
   /// Maps a YAML type string to an OpenAPI schema definition.
-  /// 
+  ///
   /// Handles primitive types, lists, maps, and references to other model classes.
   /// For references to other models, it may trigger parsing of those models if
   /// they haven't been processed yet.
-  /// 
+  ///
   /// [yamlType] The type string from the YAML model file.
-  /// 
+  ///
   /// Returns a Map representing the OpenAPI schema for the type.
   Future<Map<String, dynamic>> _mapYamlTypeToOpenApiSchema(
       String yamlType) async {
@@ -667,10 +669,10 @@ class OpenApiSpecGenerator {
   }
 
   /// Finds and parses a model from a Serverpod module.
-  /// 
+  ///
   /// Used when a model references another model from a different module.
   /// Locates the model file in the appropriate package and parses it.
-  /// 
+  ///
   /// [module] The name of the Serverpod module containing the model.
   /// [className] The name of the class to find and parse.
   Future<void> _findAndParseModel(String module, String className) async {
@@ -693,11 +695,11 @@ class OpenApiSpecGenerator {
   }
 
   /// Parses a Dart file to extract endpoint and method information.
-  /// 
+  ///
   /// Analyzes Dart files containing endpoint classes to extract API information
   /// such as method names, parameters, and return types. The extracted information
   /// is used to build the OpenAPI paths section.
-  /// 
+  ///
   /// [path] The file system path to the Dart file to parse.
   Future<void> parseDartFile(String path) async {
     final context = _collection.contextFor(path);
@@ -709,12 +711,12 @@ class OpenApiSpecGenerator {
   }
 
   /// Determines if a Dart type is a primitive type in the context of OpenAPI.
-  /// 
+  ///
   /// Primitive types include String, int, double, bool, DateTime, ByteData, Uri,
   /// Map, and enums. These types can be directly mapped to OpenAPI schema types.
-  /// 
+  ///
   /// [type] The Dart type to check.
-  /// 
+  ///
   /// Returns true if the type is considered primitive, false otherwise.
   bool _isPrimitiveType(DartType type) {
     return type.isDartCoreString ||
@@ -729,13 +731,13 @@ class OpenApiSpecGenerator {
   }
 
   /// Maps a Dart type to an OpenAPI schema definition.
-  /// 
+  ///
   /// Handles primitive types, lists, maps, and references to model classes.
   /// For references to model classes, it may trigger parsing of those models
   /// if they haven't been processed yet.
-  /// 
+  ///
   /// [type] The Dart type to map to an OpenAPI schema.
-  /// 
+  ///
   /// Returns a Map representing the OpenAPI schema for the type.
   Future<Map<String, dynamic>> mapDartTypeToOpenApiSchema(DartType type) async {
     if (type.isDartCoreString) return {'type': 'string'};
@@ -749,7 +751,9 @@ class OpenApiSpecGenerator {
     if (type.element?.displayName == 'ByteData') {
       return {'type': 'string', 'format': 'byte'};
     }
-    if (type.element?.displayName == 'Uri') return {'type': 'string', 'format': 'uri'};
+    if (type.element?.displayName == 'Uri') {
+      return {'type': 'string', 'format': 'uri'};
+    }
 
     if (type is InterfaceType) {
       if (type.isDartCoreList) {
@@ -786,32 +790,32 @@ class OpenApiSpecGenerator {
   }
 
   /// Converts the generated OpenAPI specification to a JSON-compatible Map.
-  /// 
+  ///
   /// This method should be called after [generate] to retrieve the complete
   /// OpenAPI specification as a Map that can be serialized to JSON.
-  /// 
+  ///
   /// Returns a Map containing the complete OpenAPI specification.
   Map<String, dynamic> toJson() => {
         'openapi': '3.0.0',
         'info': {'title': 'My Serverpod API', 'version': '0.1.0'},
         'servers': [
-          {'url': 'http://localhost:8080'}
+          {'url': 'http://localhost:8082'}
         ],
         'paths': _paths,
         'components': {'schemas': _schemas}
       };
 
   /// Sanitizes a class name by removing any module prefix.
-  /// 
+  ///
   /// [className] The class name to sanitize.
-  /// 
+  ///
   /// Returns the sanitized class name.
   String _sanitizeClassName(String className) => className.split(':').last;
-  
+
   /// Converts a class name to the corresponding file name based on Serverpod conventions.
-  /// 
+  ///
   /// [className] The class name to convert.
-  /// 
+  ///
   /// Returns the file name for the class.
   String _classNameToFileName(String className) {
     final regExp = RegExp(r'(?<=[a-z])(?=[A-Z])');
@@ -819,12 +823,12 @@ class OpenApiSpecGenerator {
   }
 
   /// Recursively finds all model files in a directory and its subdirectories.
-  /// 
+  ///
   /// Looks for files with .yaml or .spy.yaml extensions, which are the standard
   /// extensions for Serverpod model files.
-  /// 
+  ///
   /// [dir] The directory to search in.
-  /// 
+  ///
   /// Returns a list of File objects representing the found model files.
   List<File> _findModelFilesRecursively(Directory dir) {
     final List<File> files = [];
@@ -844,23 +848,23 @@ class OpenApiSpecGenerator {
 
 // --- ENDPOINT VISITOR (Async, as per your original) ---
 /// A visitor that traverses the AST of a Dart file to find endpoint classes and methods.
-/// 
+///
 /// This visitor is responsible for extracting API information from endpoint classes
 /// and converting it to OpenAPI path definitions.
 class _EndpointVisitor extends RecursiveAstVisitor<void> {
   /// The OpenAPI specification generator that created this visitor.
   final OpenApiSpecGenerator generator;
-  
+
   /// The name of the endpoint class currently being visited, or null if not in an endpoint.
   String? _currentEndpointName;
 
   /// Creates a new endpoint visitor.
-  /// 
+  ///
   /// [generator] The OpenAPI specification generator that created this visitor.
   _EndpointVisitor(this.generator);
 
   /// Visits a compilation unit to find endpoint classes.
-  /// 
+  ///
   /// [unit] The compilation unit to visit.
   Future<void> visitUnit(CompilationUnit unit) async {
     for (final declaration in unit.declarations) {
@@ -871,9 +875,9 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   }
 
   /// Visits a class declaration to check if it's an endpoint class.
-  /// 
+  ///
   /// An endpoint class is one that extends the Endpoint class.
-  /// 
+  ///
   /// [node] The class declaration to visit.
   @override
   Future<void> visitClassDeclaration(ClassDeclaration node) async {
@@ -886,10 +890,10 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
         rawName = namePart.typeName.lexeme.replaceAll('Endpoint', '');
       }
       if (rawName == null) return;
-      
+
       _currentEndpointName = toCamelCase(rawName);
       print('    -> Found Endpoint: $_currentEndpointName');
-      
+
       // ClassBody.members is a getter that returns List<ClassMember>
       final bodyImpl = node.body as ClassBodyImpl;
       for (final member in bodyImpl.members) {
@@ -902,11 +906,11 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   }
 
   /// Converts a string to camelCase.
-  /// 
+  ///
   /// Used to convert endpoint class names to endpoint paths.
-  /// 
+  ///
   /// [input] The string to convert.
-  /// 
+  ///
   /// Returns the camelCase version of the input string.
   String toCamelCase(String input) {
     if (input.isEmpty) return input;
@@ -914,10 +918,10 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   }
 
   /// Visits a method declaration to extract API information.
-  /// 
+  ///
   /// Extracts method name, parameters, and return type to create an OpenAPI path definition.
   /// Automatically determines if the method should be a GET or POST request based on parameter types.
-  /// 
+  ///
   /// [node] The method declaration to visit.
   @override
   Future<void> visitMethodDeclaration(MethodDeclaration node) async {
@@ -942,7 +946,7 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     // From here on, 'element' is a guaranteed MethodElement.
     final methodName = element.name;
     if (methodName == null) return;
-    
+
     // final methodName = node.name.lexeme;
     if (methodName.startsWith('_') ||
         ['initialize', 'streamOpened', 'streamClosed', 'handleStreamMessage']
@@ -953,12 +957,11 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     print('      -> Found Method: $methodName');
     final path = '/$_currentEndpointName/$methodName';
 
-
     // FIX: Class name was changed from FormalParameterElement to ParameterElement
-      final apiParams = element.formalParameters
+    final apiParams = element.formalParameters
         .where((p) => p.type.element?.displayName != 'Session')
         .toList();
-        
+
     final bool isPostRequest =
         apiParams.any((p) => !generator._isPrimitiveType(p.type));
 
@@ -1012,7 +1015,8 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     }
 
     // FIX: Use .declaredElement which is more robust
-    final DartType? returnTypeFromElement = node.declaredFragment?.element.returnType;
+    final DartType? returnTypeFromElement =
+        node.declaredFragment?.element.returnType;
     Map<String, dynamic> responseSchema = {};
     if (returnTypeFromElement != null) {
       DartType finalType = returnTypeFromElement;
@@ -1022,7 +1026,8 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
         finalType = finalType.typeArguments.first;
       }
       // FIX: Use modern .element property
-      if (!finalType.isDartCoreNull && finalType.element?.displayName != 'void') {
+      if (!finalType.isDartCoreNull &&
+          finalType.element?.displayName != 'void') {
         responseSchema = await generator.mapDartTypeToOpenApiSchema(finalType);
       }
     }
@@ -1039,5 +1044,4 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
 
     generator._paths[path] = pathItem;
   }
-
 }
