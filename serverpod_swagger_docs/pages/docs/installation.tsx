@@ -18,7 +18,7 @@ export default function Installation() {
       <ul>
         <li>A Serverpod project set up and running</li>
         <li>Dart SDK 3.0.0 or higher</li>
-        <li>Serverpod 3.2.3 or higher</li>
+        <li>Serverpod 3.4.2 or higher</li>
       </ul>
 
       <h2>Adding the Package Dependency</h2>

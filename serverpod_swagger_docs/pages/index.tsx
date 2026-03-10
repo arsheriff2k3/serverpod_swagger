@@ -130,7 +130,7 @@ void run(List<String> args) async {
           <li>Customizable authentication schemes</li>
           <li>HTTP method customization</li>
           <li>Live-reloading during development</li>
-          <li>Compatible with Serverpod 3.2.3 and higher</li>
+          <li>Compatible with Serverpod 3.4.2 and higher</li>
         </ul>
       </section>
     </div>

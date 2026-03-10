@@ -17,7 +17,7 @@ export default function GettingStarted() {
       <p>Before you begin, make sure you have:</p>
 
       <ul>
-        <li>Serverpod 3.2.3 or higher</li>
+        <li>Serverpod 3.4.2 or higher</li>
         <li>Dart 3.0.0 or higher</li>
         <li>A working Serverpod project</li>
       </ul>

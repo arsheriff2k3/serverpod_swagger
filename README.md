@@ -11,11 +11,11 @@ A package to automatically generate and serve Swagger UI for a Serverpod backend
 - Intelligent HTTP method detection based on parameter types
 - Comprehensive model parsing and schema generation
 - Flexible authentication configuration
-- Compatible with Serverpod 3.2.3
+- Compatible with Serverpod 3.4.2
 
 ## Requirements
 
-- Serverpod 3.2.3 or higher
+- Serverpod 3.4.2 or higher
 - Dart 3.0.0 or higher
 
 ## Installation
