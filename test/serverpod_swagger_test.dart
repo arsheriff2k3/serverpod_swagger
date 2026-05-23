@@ -392,7 +392,7 @@ void main() {
 
   group('ServerpodSwaggerVersion', () {
     test('has correct version', () {
-      expect(ServerpodSwaggerVersion.version, equals('1.0.1'));
+      expect(ServerpodSwaggerVersion.version, equals('1.0.2'));
     });
 
     test('has correct min serverpod version', () {

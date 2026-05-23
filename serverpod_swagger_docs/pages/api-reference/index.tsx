@@ -57,7 +57,7 @@ export default function APIReference() {
         <tbody>
           <tr>
             <td><code>version</code></td>
-            <td><code>&apos;1.0.1&apos;</code></td>
+            <td><code>&apos;1.0.2&apos;</code></td>
           </tr>
           <tr>
             <td><code>minServerpodVersion</code></td>

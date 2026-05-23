@@ -4,7 +4,7 @@
 
 `serverpod_swagger` automatically generates OpenAPI 3.0 specifications from your Serverpod endpoints and serves interactive Swagger UI documentation. It uses the Dart `analyzer` to parse your endpoint classes and YAML model files to produce accurate API schemas.
 
-**Version**: 1.0.1
+**Version**: 1.0.2
 **Serverpod**: >=3.4.2 <4.0.0
 **Dart SDK**: >=3.5.0 <4.0.0
 

@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden sm:flex items-center gap-3">
-            <span className="badge">v1.0.1</span>
+            <span className="badge">v1.0.2</span>
             <a
               href="https://github.com/arsheriff2k3/serverpod_swagger"
               target="_blank"

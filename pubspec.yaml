@@ -1,6 +1,6 @@
 name: serverpod_swagger
 description: Automatically generate and serve Swagger UI for a Serverpod backend. Parses your endpoints and models to produce an OpenAPI 3.0 specification.
-version: 1.0.1
+version: 1.0.2
 homepage: https://serverpodswagger.vercel.app/
 repository: https://github.com/arsheriff2k3/serverpod_swagger
 topics:
@@ -8,6 +8,14 @@ topics:
   - swagger
   - openapi
   - api-documentation
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
 
 executables:
   generate: serverpod_swagger_generate

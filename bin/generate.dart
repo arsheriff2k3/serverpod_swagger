@@ -900,15 +900,14 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   Future<void> visitClassDeclaration(ClassDeclaration node) async {
     final superclass = node.extendsClause?.superclass.name.lexeme;
     if (superclass == 'Endpoint') {
-      // ignore: deprecated_member_use
-      final rawName = node.name.lexeme.replaceAll('Endpoint', '');
+      final rawName = node.namePart.typeName.lexeme.replaceAll('Endpoint', '');
       if (rawName.isEmpty) return;
 
       _currentEndpointName = toCamelCase(rawName);
       print('    -> Found Endpoint: $_currentEndpointName');
 
-      // ignore: deprecated_member_use
-      for (final member in node.members) {
+      final body = node.body as BlockClassBody;
+      for (final member in body.members) {
         if (member is MethodDeclaration) {
           await visitMethodDeclaration(member);
         }
