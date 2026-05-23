@@ -5,19 +5,18 @@ import Link from "next/link";
 export default function OpenAPIGeneration() {
   return (
     <div className="prose dark:prose-invert">
-      <h1>OpenAPI Generation Configuration</h1>
+      <h1>OpenAPI Generation</h1>
 
       <p>
-        Serverpod Swagger automatically generates OpenAPI 3.0 specifications
-        from your Serverpod protocol definitions. This page explains how to
-        customize the generation process to fit your needs.
+        The <code>serverpod_swagger</code> CLI analyzes your Serverpod endpoint source code
+        using the Dart analyzer and generates an OpenAPI 3.0 specification as{" "}
+        <code>apispec.json</code> in your project root.
       </p>
 
       <h2>Basic Generation</h2>
 
       <p>
-        The simplest way to generate the OpenAPI specification is to run the
-        following command from your project root:
+        Run the generator from your Serverpod server project directory:
       </p>
 
       <CodeBlock
@@ -27,22 +26,12 @@ export default function OpenAPIGeneration() {
       />
 
       <p>
-        This will create an <code>apispec.json</code> file in your project root
-        directory with default settings.
+        This parses all endpoint classes in{" "}
+        <code>lib/src/generated/endpoints/</code> and model files in{" "}
+        <code>lib/src/models/</code>, then writes <code>apispec.json</code>.
       </p>
 
-      <h2>Command-line Options</h2>
-
-      <p>
-        The generator supports several command-line options to customize the
-        output:
-      </p>
-
-      <CodeBlock
-        language="bash"
-        code={`dart run serverpod_swagger:generate [options]`}
-        showLineNumbers={false}
-      />
+      <h2>Command-Line Options</h2>
 
       <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700 my-4">
         <thead>
@@ -53,204 +42,215 @@ export default function OpenAPIGeneration() {
             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
               Description
             </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--base-url=URL</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Set the server URL in the spec (default: <code>http://localhost:8082</code>)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--auth=TYPE</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Add a security scheme: <code>jwt</code>, <code>apikey</code>, <code>basic</code>, or <code>oauth2</code>
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--auth-description=TEXT</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Custom description for the security scheme
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--secure-endpoints=LIST</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Comma-separated list of endpoints or methods to secure (e.g., <code>admin,user/delete</code>)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--unsecure-endpoints=LIST</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Comma-separated list of endpoints or methods to leave unsecured
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--secure-single-url=PATH</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Secure a single URL path (highest priority override)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--unsecure-single-url=PATH</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Unsecure a single URL path (highest priority override)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--http-method=PATH:METHOD</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Override the HTTP method for a specific path (e.g., <code>/user/archive:delete</code>)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--unauth</code> / <code>--disable-auth</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Remove all security from every endpoint
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--update</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Modify an existing <code>apispec.json</code> instead of regenerating from source
+            </td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <code>--verbose</code>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              Print additional details about the generated spec
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Example: Full Generation with Auth</h2>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate \\
+  --base-url=https://api.example.com \\
+  --auth=jwt \\
+  --unsecure-endpoints=auth/login,auth/register \\
+  --verbose`}
+        showLineNumbers={false}
+      />
+
+      <h2>HTTP Method Detection</h2>
+
+      <p>
+        The generator infers HTTP methods from endpoint method names using prefix conventions:
+      </p>
+
+      <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700 my-4">
+        <thead>
+          <tr>
             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Default
+              HTTP Method
+            </th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Name Prefixes
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
           <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--output</code>
+              <strong>GET</strong>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Path to the output file
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>apispec.json</code>
+              get, list, fetch, find, read, retrieve, query, search, show, view, load, count, check, has, is, exists, lookup
             </td>
           </tr>
           <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--title</code>
+              <strong>POST</strong>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              API title
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Your project name
+              create, add, insert, save, register, execute, run, perform, login, send, submit, upload, import, process, trigger, start, init, generate, compute
             </td>
           </tr>
           <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--description</code>
+              <strong>PATCH</strong>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              API description
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Empty
+              update, modify, patch, edit, change, set, put, replace, adjust, rename, move, toggle
             </td>
           </tr>
           <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--version</code>
+              <strong>DELETE</strong>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              API version
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>1.0.0</code>
+              delete, remove, destroy, drop, clear, unlink, unregister, revoke, cancel, purge
             </td>
           </tr>
           <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--server-url</code>
+              <strong>POST (default)</strong>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Server URL
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>http://localhost:8082</code>
-            </td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              <code>--server-description</code>
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Server description
-            </td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-              Development server
+              Any method name that does not match the above prefixes
             </td>
           </tr>
         </tbody>
       </table>
 
-      <p>Example usage:</p>
+      <p>
+        You can override any auto-detected method with the <code>--http-method</code> flag:
+      </p>
 
       <CodeBlock
         language="bash"
-        code={`dart run serverpod_swagger:generate --output=web/apispec.json --title="My API" --version="2.0.0" --server-url="https://api.example.com"`}
+        code={`dart run serverpod_swagger:generate --http-method=/user/archive:delete`}
         showLineNumbers={false}
       />
 
-      <h2>Customizing Endpoint Documentation</h2>
+      <h2>Generated Responses</h2>
 
       <p>
-        You can add documentation to your endpoints using Dart documentation
-        comments. The generator will extract these comments and include them in
-        the OpenAPI specification.
-      </p>
-
-      <CodeBlock
-        language="dart"
-        code={`/// Creates a new user in the system.
-/// 
-/// This endpoint requires admin privileges.
-/// 
-/// @param user The user to create
-/// @return The created user with ID assigned
-@Route('/users')
-Future<User> createUser(Session session, User user);`}
-        fileName="example_endpoint.dart"
-      />
-
-      <p>
-        The generator will use the first line of the comment as the summary and
-        the rest as the description. You can also use <code>@param</code> and{" "}
-        <code>@return</code> tags to document parameters and return values.
-      </p>
-
-      <h2>HTTP Method Customization</h2>
-
-      <p>
-        By default, Serverpod Swagger assigns HTTP methods based on the endpoint
-        name prefix:
+        Every operation in the generated spec includes three responses:
       </p>
 
       <ul>
-        <li>
-          <code>get*</code> - GET
-        </li>
-        <li>
-          <code>create*</code> - POST
-        </li>
-        <li>
-          <code>update*</code> - PUT
-        </li>
-        <li>
-          <code>delete*</code> - DELETE
-        </li>
-        <li>All others - POST</li>
+        <li><strong>200</strong> - Successful operation (with the return type schema, if applicable)</li>
+        <li><strong>400</strong> - Bad request</li>
+        <li><strong>500</strong> - Internal server error</li>
       </ul>
 
-      <p>
-        You can override this behavior by using the <code>@Method</code>{" "}
-        annotation:
-      </p>
-
-      <CodeBlock
-        language="dart"
-        code={`@Method('PATCH')
-@Route('/users/:id')
-Future<User> updateUserPartial(Session session, int id, User user);`}
-        fileName="example_endpoint.dart"
-      />
-
-      <h2>Custom Schema Definitions</h2>
+      <h2>Request Body Handling</h2>
 
       <p>
-        For complex types that aren't automatically handled by the generator,
-        you can provide custom schema definitions using YAML files.
+        For POST, PATCH, and DELETE methods, parameters are placed in a JSON request body.
+        Non-nullable parameters are listed in the <code>required</code> array. For GET methods
+        with only primitive parameters, they are placed as query parameters. If a GET method
+        has complex (non-primitive) parameters, it falls back to POST with a request body.
       </p>
+
+      <h2>Update Mode</h2>
 
       <p>
-        Create a file named <code>openapi_schemas.yaml</code> in your project
-        root:
+        The <code>--update</code> flag loads the existing <code>apispec.json</code> and applies
+        only the changes specified by other flags (auth, base URL, HTTP methods) without
+        re-analyzing the source code. This is useful for quick security or URL changes:
       </p>
-
-      <CodeBlock
-        language="yaml"
-        code={`schemas:\n  CustomType:\n    type: object\n    properties:\n      id:\n        type: integer\n        format: int64\n      name:\n        type: string\n    required:\n      - id\n      - name`}
-        fileName="openapi_schemas.yaml"
-      />
-
-      <p>
-        The generator will include these custom schema definitions in the
-        generated OpenAPI specification.
-      </p>
-
-      <h2>Regenerating on Code Changes</h2>
-
-      <p>
-        During development, you may want to automatically regenerate the OpenAPI
-        specification when your code changes. You can use a file watcher like{" "}
-        <code>watcher</code> or <code>build_runner</code> to do this.
-      </p>
-
-      <p>
-        Example with <code>watcher</code>:
-      </p>
-
-      <CodeBlock
-        language="yaml"
-        code={`dependencies:\n  watcher: ^1.0.0\n\ndev_dependencies:\n  build_runner: ^2.0.0`}
-        fileName="pubspec.yaml"
-      />
-
-      <CodeBlock
-        language="dart"
-        code={`import 'dart:io';\nimport 'package:watcher/watcher.dart';\n\nvoid main() {\n  final watcher = DirectoryWatcher('lib/protocol');\n  watcher.events.listen((event) {\n    if (event.type == ChangeType.MODIFY && event.path.endsWith('.dart')) {\n      print('Regenerating OpenAPI spec...');\n      Process.run('dart', ['bin/generate.dart']);\n    }\n  });\n  print('Watching for changes in lib/protocol...');\n}`}
-        fileName="bin/watch.dart"
-      />
-
-      <p>Run the watcher:</p>
 
       <CodeBlock
         language="bash"
-        code={`dart bin/watch.dart`}
+        code={`dart run serverpod_swagger:generate --update --base-url=https://staging.example.com`}
         showLineNumbers={false}
       />
 
@@ -262,7 +262,7 @@ Future<User> updateUserPartial(Session session, int id, User user);`}
             href="/docs/configuration/swagger-ui-options"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
-            Configure Swagger UI options
+            Configure the Swagger UI route
           </Link>
         </li>
         <li>
@@ -270,7 +270,7 @@ Future<User> updateUserPartial(Session session, int id, User user);`}
             href="/docs/configuration/authentication"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
-            Add authentication to your API documentation
+            Configure authentication
           </Link>
         </li>
       </ul>

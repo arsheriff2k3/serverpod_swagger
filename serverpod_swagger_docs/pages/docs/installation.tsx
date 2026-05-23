@@ -17,7 +17,7 @@ export default function Installation() {
 
       <ul>
         <li>A Serverpod project set up and running</li>
-        <li>Dart SDK 3.0.0 or higher</li>
+        <li>Dart SDK 3.5.0 or higher</li>
         <li>Serverpod 3.4.2 or higher</li>
       </ul>
 
@@ -30,8 +30,8 @@ export default function Installation() {
       <CodeBlock
         language="yaml"
         code={`dependencies:
-  serverpod: ^3.2.3
-  serverpod_swagger: ^0.3.0`}
+  serverpod: ">=3.4.2 <4.0.0"
+  serverpod_swagger: ^1.0.0`}
         fileName="pubspec.yaml"
       />
 

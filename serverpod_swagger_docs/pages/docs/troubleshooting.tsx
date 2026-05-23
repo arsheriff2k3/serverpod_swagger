@@ -21,21 +21,19 @@ export default function Troubleshooting() {
 
       <h3>Possible Causes and Solutions</h3>
 
-      <h4>1. Missing trailing slash in the URL</h4>
+      <h4>1. Register both route patterns</h4>
 
       <p>
-        Make sure you're accessing Swagger UI with a trailing slash in the URL.
+        Both <code>/swagger</code> and <code>/swagger/</code> should work.
+        Make sure you register both route patterns:
       </p>
 
-      <div className="flex items-center space-x-2 my-2">
-        <span className="text-red-500">✗</span>
-        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">http://localhost:8082/swagger</code>
-      </div>
-
-      <div className="flex items-center space-x-2 my-2">
-        <span className="text-green-500">✓</span>
-        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">http://localhost:8082/swagger/</code>
-      </div>
+      <CodeBlock
+        language="dart"
+        code={`pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+pod.webServer.addRoute(swaggerRoute, '/swagger');`}
+        showLineNumbers={false}
+      />
 
       <h4>2. Missing or incorrect API specification file</h4>
 
@@ -58,7 +56,8 @@ export default function Troubleshooting() {
       <CodeBlock
         language="dart"
         code={`final swaggerRoute = SwaggerUIRoute(Directory.current);
-pod.webServer.addRoute(swaggerRoute, '/swagger/**');  // This must match the URL path you're accessing`}
+pod.webServer.addRoute(swaggerRoute, '/swagger/**');
+pod.webServer.addRoute(swaggerRoute, '/swagger');`}
         fileName="main.dart"
       />
 

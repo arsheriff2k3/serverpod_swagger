@@ -5,288 +5,166 @@ import Link from 'next/link';
 export default function CustomSchemas() {
   return (
     <div className="prose dark:prose-invert">
-      <h1>Custom Schema Definitions</h1>
-      
+      <h1>How Schemas Are Generated</h1>
+
       <p>
-        While Serverpod automatically generates OpenAPI schemas from your Dart classes,
-        there are cases where you might need to define custom schemas or override the generated ones.
-        This page explains how to create and use custom schema definitions in your Serverpod Swagger documentation.
+        The <code>serverpod_swagger</code> generator automatically creates OpenAPI schemas
+        from your Serverpod model files and Dart endpoint signatures. This page explains
+        how schema generation works and how you can influence the output.
       </p>
 
-      <h2>Why Use Custom Schemas?</h2>
-      
-      <p>Custom schemas are useful when you need to:</p>
-      
-      <ul>
-        <li>Define complex data structures that don't have corresponding Dart classes</li>
-        <li>Override the automatically generated schemas with more detailed information</li>
-        <li>Add examples, descriptions, or constraints to your schemas</li>
-        <li>Define schemas for third-party libraries or external systems</li>
-      </ul>
+      <h2>Automatic Schema Generation</h2>
 
-      <h2>Creating Custom Schema Definitions</h2>
-      
       <p>
-        You can define custom schemas by creating a YAML file with your schema definitions.
-        Create a file named <code>openapi_schemas.yaml</code> in your project root:
-      </p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`components:
-  schemas:
-    CustomResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [success, error, pending]
-          description: The status of the operation
-        data:
-          type: object
-          description: The response data
-          nullable: true
-        message:
-          type: string
-          description: A human-readable message
-      required:
-        - status
-    PaginatedResult:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            type: object
-          description: The list of items in the current page
-        total:
-          type: integer
-          format: int32
-          description: Total number of items
-        page:
-          type: integer
-          format: int32
-          description: Current page number
-        pageSize:
-          type: integer
-          format: int32
-          description: Number of items per page
-      required:
-        - items
-        - total
-        - page
-        - pageSize`}
-        fileName="openapi_schemas.yaml"
-      />
-      
-      <p>
-        The generator will include these schema definitions in the generated OpenAPI specification.
+        The generator reads two sources to build schemas:
       </p>
 
-      <h2>Referencing Custom Schemas in Endpoint Annotations</h2>
-      
-      <p>
-        You can reference your custom schemas in endpoint annotations using the <code>@Schema</code> annotation:
-      </p>
-      
-      <CodeBlock
-        language="dart"
-        code={`/// Get paginated users
-/// 
-/// Returns a paginated list of users
-@Route('/users')
-@Method('GET')
-@Schema(response: 'PaginatedResult')
-Future<String> getUsers(Session session, {@Param('page') int page = 1, @Param('pageSize') int pageSize = 10});
-
-/// Create user
-/// 
-/// Creates a new user and returns a custom response
-@Route('/users')
-@Method('POST')
-@Schema(response: 'CustomResponse')
-Future<String> createUser(Session session, User user);`}
-        fileName="example_endpoint.dart"
-      />
-      
-      <p>
-        In this example, the <code>getUsers</code> endpoint returns a <code>PaginatedResult</code> schema,
-        and the <code>createUser</code> endpoint returns a <code>CustomResponse</code> schema.
-      </p>
-
-      <h2>Adding Examples to Custom Schemas</h2>
-      
-      <p>
-        You can add examples to your custom schemas to help API consumers understand the expected data format:
-      </p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`components:
-  schemas:
-    CustomResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [success, error, pending]
-          description: The status of the operation
-        data:
-          type: object
-          description: The response data
-          nullable: true
-        message:
-          type: string
-          description: A human-readable message
-      required:
-        - status
-      example:
-        status: success
-        data:
-          id: 123
-          name: "John Doe"
-        message: "User created successfully"`}
-        fileName="openapi_schemas.yaml"
-      />
-
-      <h2>Overriding Generated Schemas</h2>
-      
-      <p>
-        If you want to override a schema that is automatically generated from a Dart class,
-        simply define a schema with the same name in your YAML file:
-      </p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: The unique identifier for the user
-        email:
-          type: string
-          format: email
-          description: The user's email address
-        name:
-          type: string
-          description: The user's full name
-        role:
-          type: string
-          enum: [admin, user, guest]
-          description: The user's role
-      required:
-        - email
-        - name
-      example:
-        id: 123
-        email: "john.doe@example.com"
-        name: "John Doe"
-        role: "user"`}
-        fileName="openapi_schemas.yaml"
-      />
-
-      <h2>Using References in Schema Definitions</h2>
-      
-      <p>
-        You can use references to reuse schema components within your definitions:
-      </p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          description: Error code
-        message:
-          type: string
-          description: Error message
-      required:
-        - code
-        - message
-    
-    ApiResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          nullable: true
-          description: Response data
-        error:
-          $ref: '#/components/schemas/Error'
-          description: Error information if the request failed
-        success:
-          type: boolean
-          description: Whether the request was successful
-      required:
-        - success`}
-        fileName="openapi_schemas.yaml"
-      />
-
-      <h2>Combining Custom Schemas with Security Definitions</h2>
-      
-      <p>
-        You can combine custom schemas with security definitions in a single YAML file:
-      </p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:
-  - BearerAuth: []
-
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Enter your JWT token in the format 'Bearer {token}'
-  
-  schemas:
-    ApiResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          nullable: true
-        error:
-          type: object
-          nullable: true
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-        success:
-          type: boolean
-      required:
-        - success`}
-        fileName="openapi_custom.yaml"
-      />
-
-      <h2>Next Steps</h2>
-      
       <ul>
         <li>
-          <Link href="/docs/advanced-usage/response-examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Add response examples
+          <strong>YAML model files</strong> in <code>lib/src/models/</code> (both <code>.yaml</code> and{" "}
+          <code>.spy.yaml</code> files) -- these produce named schemas under{" "}
+          <code>components/schemas</code>.
+        </li>
+        <li>
+          <strong>Dart endpoint parameters and return types</strong> -- primitive types are
+          inlined, while references to model classes use <code>$ref</code> pointers.
+        </li>
+      </ul>
+
+      <h3>Serverpod Model File Example</h3>
+
+      <p>
+        Given a standard Serverpod model file:
+      </p>
+
+      <CodeBlock
+        language="yaml"
+        code={`class: User\nfields:\n  name: String\n  email: String\n  age: int?\n  role: String`}
+        fileName="lib/src/models/user.spy.yaml"
+      />
+
+      <p>
+        The generator produces the following OpenAPI schema:
+      </p>
+
+      <CodeBlock
+        language="json"
+        code={`{\n  "User": {\n    "type": "object",\n    "properties": {\n      "name": { "type": "string" },\n      "email": { "type": "string" },\n      "age": { "type": "integer", "format": "int64" },\n      "role": { "type": "string" }\n    },\n    "required": ["name", "email", "role"]\n  }\n}`}
+        fileName="apispec.json (excerpt)"
+      />
+
+      <p>
+        Non-nullable fields are added to the <code>required</code> array. Nullable fields
+        (ending with <code>?</code>) are omitted from <code>required</code>.
+      </p>
+
+      <h2>Supported Type Mappings</h2>
+
+      <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700 my-4">
+        <thead>
+          <tr>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Dart/YAML Type</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">OpenAPI Type</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>String</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code></td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>int</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>integer</code> (format: int64)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>double</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>number</code> (format: double)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>bool</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>boolean</code></td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>DateTime</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> (format: date-time)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>ByteData</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> (format: byte)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>Duration</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> (ISO 8601)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>Uri</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> (format: uri)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>UuidValue</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> (format: uuid)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>List&lt;T&gt;</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>array</code> (items: schema of T)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>Map&lt;K, V&gt;</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>object</code> (additionalProperties: true)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Enums</td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>string</code> with <code>enum</code> values</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Model classes</td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>$ref</code> to <code>#/components/schemas/ClassName</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Cross-Module Model Resolution</h2>
+
+      <p>
+        When an endpoint references a model from another Serverpod module (e.g.,{" "}
+        <code>module:auth:UserInfo</code>), the generator automatically locates and
+        parses that model from the dependency's package using{" "}
+        <code>package_config.json</code>.
+      </p>
+
+      <h2>Editing the Generated Spec</h2>
+
+      <p>
+        The generator writes <code>apispec.json</code> as a standard JSON file. You can
+        edit it manually after generation to add custom descriptions, examples, or
+        additional schemas. Use the <code>--update</code> flag on subsequent runs to
+        apply CLI changes without overwriting your manual edits:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`# First run: generate from source\ndart run serverpod_swagger:generate --auth=jwt\n\n# Later: update auth settings without regenerating\ndart run serverpod_swagger:generate --update --unsecure-endpoints=public`}
+        showLineNumbers={false}
+      />
+
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 my-4">
+        <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+          <strong>Note:</strong> Running without <code>--update</code> regenerates the entire
+          spec from source, which will overwrite any manual edits to <code>apispec.json</code>.
+        </p>
+      </div>
+
+      <h2>Next Steps</h2>
+
+      <ul>
+        <li>
+          <Link href="/docs/configuration/openapi-generation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            Full list of CLI generation options
           </Link>
         </li>
         <li>
           <Link href="/docs/configuration/authentication" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
             Configure authentication
-          </Link>
-        </li>
-        <li>
-          <Link href="/examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Explore examples
           </Link>
         </li>
       </ul>

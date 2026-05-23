@@ -6,139 +6,167 @@ export default function Authentication() {
   return (
     <div className="prose dark:prose-invert">
       <h1>Authentication Configuration</h1>
-      
+
       <p>
-        Adding authentication information to your OpenAPI specification allows users to authenticate with your API directly from the Swagger UI interface.
-        This page explains how to configure different authentication methods for your Serverpod Swagger documentation.
+        The <code>serverpod_swagger</code> generator can add OpenAPI security schemes to your
+        API specification via CLI flags. This page explains how to configure authentication
+        for your generated documentation.
       </p>
 
-      <h2>Adding Authentication to OpenAPI Specification</h2>
-      
+      <h2>Setting an Auth Type</h2>
+
       <p>
-        You can add authentication schemes to your OpenAPI specification by creating a YAML file with security definitions.
-      </p>
-      
-      <p>Create a file named <code>openapi_security.yaml</code> in your project root:</p>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:\n  - BearerAuth: []\n\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT\n      description: Enter your JWT token in the format 'Bearer {token}'`}
-        fileName="openapi_security.yaml"
-      />
-      
-      <p>
-        The generator will include these security definitions in the generated OpenAPI specification.
+        Use the <code>--auth</code> flag to define a security scheme. When an auth type is set,
+        all endpoints are secured by default.
       </p>
 
-      <h2>Common Authentication Types</h2>
-      
-      <h3>Bearer Token Authentication</h3>
-      
       <CodeBlock
-        language="yaml"
-        code={`security:\n  - BearerAuth: []\n\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT\n      description: Enter your JWT token in the format 'Bearer {token}'`}
-        fileName="openapi_security.yaml"
-      />
-      
-      <h3>API Key Authentication</h3>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:\n  - ApiKeyAuth: []\n\ncomponents:\n  securitySchemes:\n    ApiKeyAuth:\n      type: apiKey\n      in: header\n      name: X-API-Key\n      description: Enter your API key`}
-        fileName="openapi_security.yaml"
-      />
-      
-      <h3>Basic Authentication</h3>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:\n  - BasicAuth: []\n\ncomponents:\n  securitySchemes:\n    BasicAuth:\n      type: http\n      scheme: basic\n      description: Enter your username and password`}
-        fileName="openapi_security.yaml"
-      />
-      
-      <h3>OAuth 2.0 Authentication</h3>
-      
-      <CodeBlock
-        language="yaml"
-        code={`security:\n  - OAuth2: []\n\ncomponents:\n  securitySchemes:\n    OAuth2:\n      type: oauth2\n      flows:\n        implicit:\n          authorizationUrl: https://example.com/oauth/authorize\n          scopes:\n            read: Read access to the API\n            write: Write access to the API`}
-        fileName="openapi_security.yaml"
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=jwt`}
+        showLineNumbers={false}
       />
 
-      <h2>Applying Security to Specific Endpoints</h2>
-      
+      <p>Supported auth types:</p>
+
+      <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700 my-4">
+        <thead>
+          <tr>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Value</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">OpenAPI Scheme</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>jwt</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">HTTP Bearer with JWT format</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>apikey</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">API Key in header (<code>X-API-Key</code>)</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>basic</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">HTTP Basic authentication</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>oauth2</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">OAuth 2.0 implicit flow</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Custom Auth Description</h2>
+
       <p>
-        You can apply security requirements to specific endpoints by using the <code>@Security</code> annotation in your endpoint definitions:
-      </p>
-      
-      <CodeBlock
-        language="dart"
-        code={`/// Get user profile
-/// 
-/// Retrieves the profile of the authenticated user
-@Security(['BearerAuth'])
-@Route('/users/profile')
-Future<User> getUserProfile(Session session);\n\n/// List all users
-/// 
-/// Requires admin privileges
-@Security(['BearerAuth', 'ApiKeyAuth'])
-@Route('/users')
-Future<List<User>> listUsers(Session session);`}
-        fileName="example_endpoint.dart"
-      />
-      
-      <p>
-        In this example, the <code>getUserProfile</code> endpoint requires Bearer authentication, while the <code>listUsers</code> endpoint requires both Bearer and API Key authentication.
+        You can provide a custom description for the security scheme:
       </p>
 
-      <h2>Implementing Authentication in Serverpod</h2>
-      
-      <p>
-        While Swagger UI allows users to provide authentication credentials for testing, you need to implement the actual authentication logic in your Serverpod server.
-      </p>
-      
-      <h3>Bearer Token Authentication Example</h3>
-      
       <CodeBlock
-        language="dart"
-        code={`import 'package:serverpod/serverpod.dart';\nimport 'package:jwt_decoder/jwt_decoder.dart';\n\nclass AuthenticationInterceptor extends Interceptor {\n  @override\n  Future<bool> beforeHandle(Session session, String methodName) async {\n    // Skip authentication for certain methods\n    if (methodName == 'login' || methodName == 'register') {\n      return true;\n    }\n\n    // Get the authorization header\n    final authHeader = session.request?.headers['authorization'];\n    if (authHeader == null || !authHeader.startsWith('Bearer ')) {\n      session.response.statusCode = 401;\n      session.response.write('Unauthorized');\n      return false;\n    }\n\n    // Extract and validate the token\n    final token = authHeader.substring(7);\n    try {\n      final decodedToken = JwtDecoder.decode(token);\n      \n      // Check if token is expired\n      if (JwtDecoder.isExpired(token)) {\n        session.response.statusCode = 401;\n        session.response.write('Token expired');\n        return false;\n      }\n      \n      // Add user info to session\n      session.auth = decodedToken;\n      return true;\n    } catch (e) {\n      session.response.statusCode = 401;\n      session.response.write('Invalid token');\n      return false;\n    }\n  }\n}\n\n// Register the interceptor in your server setup\nvoid main() async {\n  final pod = Serverpod(...);\n  \n  // Add the authentication interceptor\n  pod.addInterceptor(AuthenticationInterceptor());\n  \n  await pod.start();\n}`}
-        fileName="authentication_interceptor.dart"
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=jwt --auth-description="Provide your JWT token from the /login endpoint"`}
+        showLineNumbers={false}
+      />
+
+      <h2>Controlling Which Endpoints Are Secured</h2>
+
+      <p>
+        By default, when <code>--auth</code> is provided, all endpoints are secured.
+        You can control this with the following flags:
+      </p>
+
+      <h3>Secure specific endpoints only</h3>
+
+      <p>
+        When <code>--secure-endpoints</code> is provided, only the listed endpoints are secured.
+        Everything else is left unsecured.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=jwt --secure-endpoints=admin,user/deleteAccount`}
+        showLineNumbers={false}
+      />
+
+      <p>
+        You can specify an entire endpoint class (e.g., <code>admin</code>) or a specific
+        method (e.g., <code>user/deleteAccount</code>).
+      </p>
+
+      <h3>Unsecure specific endpoints</h3>
+
+      <p>
+        When <code>--unsecure-endpoints</code> is provided, those endpoints are explicitly
+        left open while the rest follow the default policy.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=jwt --unsecure-endpoints=auth/login,auth/register`}
+        showLineNumbers={false}
+      />
+
+      <h3>Single URL overrides</h3>
+
+      <p>
+        For fine-grained control, you can secure or unsecure a single path:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate --auth=jwt \\
+  --secure-single-url=/admin/dashboard \\
+  --unsecure-single-url=/status/health`}
+        showLineNumbers={false}
+      />
+
+      <h2>Disabling Auth Globally</h2>
+
+      <p>
+        To remove all security definitions from every endpoint:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate --unauth`}
+        showLineNumbers={false}
+      />
+
+      <p>
+        The <code>--disable-auth</code> flag is an alias for <code>--unauth</code>.
+      </p>
+
+      <h2>Updating Auth on an Existing Spec</h2>
+
+      <p>
+        Use <code>--update</code> to modify security settings on an existing <code>apispec.json</code>
+        without regenerating the entire spec from source:
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dart run serverpod_swagger:generate --update --auth=apikey --unsecure-endpoints=public`}
+        showLineNumbers={false}
       />
 
       <h2>Testing Authentication in Swagger UI</h2>
-      
+
       <p>
-        Once you've configured authentication in your OpenAPI specification, users can authenticate in Swagger UI by following these steps:
+        Once your spec includes a security scheme, the Swagger UI will show an "Authorize"
+        button. Click it, enter your credentials, and test authenticated endpoints directly
+        from the browser.
       </p>
-      
-      <ol>
-        <li>Click the "Authorize" button at the top of the Swagger UI page</li>
-        <li>Enter the required credentials for the authentication method</li>
-        <li>Click "Authorize" to apply the credentials</li>
-        <li>Close the dialog and test the authenticated endpoints</li>
-      </ol>
-      
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-4">
-        <p className="text-blue-800 dark:text-blue-200 text-sm">
-          <strong>Tip:</strong> You can use the <code>persistAuthorization</code> option in your Swagger UI configuration to make the authorization persist between page refreshes.
-        </p>
-      </div>
 
       <h2>Next Steps</h2>
-      
+
       <ul>
         <li>
-          <Link href="/docs/advanced-usage/custom-schemas" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Define custom schemas
+          <Link href="/docs/configuration/openapi-generation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            OpenAPI generation options
           </Link>
         </li>
         <li>
-          <Link href="/docs/advanced-usage/response-examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Add response examples
-          </Link>
-        </li>
-        <li>
-          <Link href="/examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Explore examples
+          <Link href="/docs/configuration/swagger-ui-options" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            Swagger UI route configuration
           </Link>
         </li>
       </ul>
