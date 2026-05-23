@@ -6,8 +6,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/src/dart/ast/ast.dart'
-    show ClassBodyImpl, NameWithTypeParameters;
+// Note: Avoid importing from package:analyzer/src/ (internal API).
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:path/path.dart' as p;
@@ -722,9 +721,12 @@ class OpenApiSpecGenerator {
     return type.isDartCoreString ||
         type.isDartCoreInt ||
         type.isDartCoreDouble ||
+        type.isDartCoreNum ||
         type.isDartCoreBool ||
         type.element?.displayName == 'DateTime' ||
+        type.element?.displayName == 'Duration' ||
         type.element?.displayName == 'ByteData' ||
+        type.element?.displayName == 'UuidValue' ||
         type.element?.displayName == 'Uri' ||
         type.isDartCoreMap ||
         (type is InterfaceType && type.element is EnumElement);
@@ -743,19 +745,35 @@ class OpenApiSpecGenerator {
     if (type.isDartCoreString) return {'type': 'string'};
     if (type.isDartCoreInt) return {'type': 'integer', 'format': 'int64'};
     if (type.isDartCoreDouble) return {'type': 'number', 'format': 'double'};
+    if (type.isDartCoreNum) return {'type': 'number'};
     if (type.isDartCoreBool) return {'type': 'boolean'};
-    // FIX: Use modern .element property for consistency
     if (type.element?.displayName == 'DateTime') {
       return {'type': 'string', 'format': 'date-time'};
     }
+    if (type.element?.displayName == 'Duration') {
+      return {'type': 'string', 'description': 'Duration in ISO 8601 format'};
+    }
     if (type.element?.displayName == 'ByteData') {
       return {'type': 'string', 'format': 'byte'};
+    }
+    if (type.element?.displayName == 'UuidValue') {
+      return {'type': 'string', 'format': 'uuid'};
     }
     if (type.element?.displayName == 'Uri') {
       return {'type': 'string', 'format': 'uri'};
     }
 
     if (type is InterfaceType) {
+      // Handle enums by listing their values.
+      if (type.element is EnumElement) {
+        final enumElement = type.element as EnumElement;
+        final values = enumElement.fields
+            .where((f) => f.isEnumConstant)
+            .map((f) => f.name)
+            .toList();
+        return {'type': 'string', 'enum': values};
+      }
+
       if (type.isDartCoreList) {
         final itemType = type.typeArguments.first;
         return {
@@ -767,7 +785,6 @@ class OpenApiSpecGenerator {
         return {'type': 'object', 'additionalProperties': true};
       }
 
-      // FIX: Use modern .element property
       final className = type.element.displayName;
       if (!_schemas.containsKey(className)) {
         final libraryUri = type.element.library.uri;
@@ -883,22 +900,17 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
   Future<void> visitClassDeclaration(ClassDeclaration node) async {
     final superclass = node.extendsClause?.superclass.name.lexeme;
     if (superclass == 'Endpoint') {
-      // ClassNamePart is usually NameWithTypeParameters which has typeName
-      final namePart = node.namePart;
-      String? rawName;
-      if (namePart is NameWithTypeParameters) {
-        rawName = namePart.typeName.lexeme.replaceAll('Endpoint', '');
-      }
-      if (rawName == null) return;
+      // ignore: deprecated_member_use
+      final rawName = node.name.lexeme.replaceAll('Endpoint', '');
+      if (rawName.isEmpty) return;
 
       _currentEndpointName = toCamelCase(rawName);
       print('    -> Found Endpoint: $_currentEndpointName');
 
-      // ClassBody.members is a getter that returns List<ClassMember>
-      final bodyImpl = node.body as ClassBodyImpl;
-      for (final member in bodyImpl.members) {
+      // ignore: deprecated_member_use
+      for (final member in node.members) {
         if (member is MethodDeclaration) {
-          await visitMethodDeclaration(member as MethodDeclaration);
+          await visitMethodDeclaration(member);
         }
       }
       _currentEndpointName = null;
@@ -917,84 +929,185 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
     return input[0].toLowerCase() + input.substring(1);
   }
 
+  /// Infers the HTTP method from the endpoint method name using naming conventions.
+  ///
+  /// Follows the same convention as serverpod_openapi:
+  /// - GET: get, list, fetch, find, read, retrieve, query, search, show, view, load
+  /// - POST: create, add, insert, save, register, execute, run, perform, login, send
+  /// - PATCH: update, modify, patch, edit, change, set, put, replace, adjust
+  /// - DELETE: delete, remove, destroy, drop, clear, unlink, unregister
+  /// - Default: POST (Serverpod endpoints are RPC-style POST by default)
+  static String _inferHttpMethod(String methodName) {
+    final lower = methodName.toLowerCase();
+
+    const getPrefixes = [
+      'get',
+      'list',
+      'fetch',
+      'find',
+      'read',
+      'retrieve',
+      'query',
+      'search',
+      'show',
+      'view',
+      'load',
+      'count',
+      'check',
+      'has',
+      'is',
+      'exists',
+      'lookup',
+    ];
+    const postPrefixes = [
+      'create',
+      'add',
+      'insert',
+      'save',
+      'register',
+      'execute',
+      'run',
+      'perform',
+      'login',
+      'send',
+      'submit',
+      'upload',
+      'import',
+      'process',
+      'trigger',
+      'start',
+      'init',
+      'generate',
+      'compute',
+    ];
+    const patchPrefixes = [
+      'update',
+      'modify',
+      'patch',
+      'edit',
+      'change',
+      'set',
+      'put',
+      'replace',
+      'adjust',
+      'rename',
+      'move',
+      'toggle',
+    ];
+    const deletePrefixes = [
+      'delete',
+      'remove',
+      'destroy',
+      'drop',
+      'clear',
+      'unlink',
+      'unregister',
+      'revoke',
+      'cancel',
+      'purge',
+    ];
+
+    for (final prefix in getPrefixes) {
+      if (lower == prefix || lower.startsWith(prefix)) return 'get';
+    }
+    for (final prefix in deletePrefixes) {
+      if (lower == prefix || lower.startsWith(prefix)) return 'delete';
+    }
+    for (final prefix in patchPrefixes) {
+      if (lower == prefix || lower.startsWith(prefix)) return 'patch';
+    }
+    for (final prefix in postPrefixes) {
+      if (lower == prefix || lower.startsWith(prefix)) return 'post';
+    }
+
+    // Default: Serverpod endpoints are RPC-style, so POST is the safest default.
+    return 'post';
+  }
+
   /// Visits a method declaration to extract API information.
   ///
-  /// Extracts method name, parameters, and return type to create an OpenAPI path definition.
-  /// Automatically determines if the method should be a GET or POST request based on parameter types.
-  ///
-  /// [node] The method declaration to visit.
+  /// Extracts method name, parameters, and return type to create an OpenAPI
+  /// path definition. Uses naming conventions to determine the HTTP method.
   @override
   Future<void> visitMethodDeclaration(MethodDeclaration node) async {
     if (_currentEndpointName == null) return;
 
-    // =======================================================================
-    // THE CORRECT, STABLE, AND MODERN APPROACH
-    // =======================================================================
-
-    // 1. Get the fragment as recommended by the linter.
     final methodFragment = node.declaredFragment;
     if (methodFragment == null) return;
 
-    // 2. Get the generic element from the fragment.
     final element = methodFragment.element;
-
-    // 3. THIS IS THE CRUCIAL STEP:
-    // Check if the element is a MethodElement. This safely "promotes" the
-    // variable so the compiler knows it has .parameters and .returnType.
     if (element is! MethodElement) return;
 
-    // From here on, 'element' is a guaranteed MethodElement.
     final methodName = element.name;
     if (methodName == null) return;
 
-    // final methodName = node.name.lexeme;
     if (methodName.startsWith('_') ||
-        ['initialize', 'streamOpened', 'streamClosed', 'handleStreamMessage']
-            .contains(methodName)) {
+        const {
+          'initialize',
+          'streamOpened',
+          'streamClosed',
+          'handleStreamMessage'
+        }.contains(methodName)) {
       return;
     }
 
     print('      -> Found Method: $methodName');
     final path = '/$_currentEndpointName/$methodName';
 
-    // FIX: Class name was changed from FormalParameterElement to ParameterElement
     final apiParams = element.formalParameters
         .where((p) => p.type.element?.displayName != 'Session')
         .toList();
 
-    final bool isPostRequest =
+    final httpMethod = _inferHttpMethod(methodName);
+
+    // Determine if any param is a complex (non-primitive) type.
+    final hasComplexParams =
         apiParams.any((p) => !generator._isPrimitiveType(p.type));
 
-    print(
-        '        - Auto-detected as ${isPostRequest ? 'POST' : 'GET'} request.');
+    // Use request body for POST/PATCH/PUT/DELETE with params,
+    // or when any param is complex even for GET.
+    final useRequestBody = httpMethod != 'get' || hasComplexParams;
+
+    print('        - HTTP method: ${httpMethod.toUpperCase()}'
+        '${hasComplexParams ? ' (has complex params)' : ''}');
 
     final pathItem = <String, dynamic>{};
-    final operation = {
+    final operation = <String, dynamic>{
       'summary': methodName,
       'operationId': '$_currentEndpointName.$methodName',
       'tags': [_currentEndpointName],
     };
 
-    if (isPostRequest) {
+    if (useRequestBody && apiParams.isNotEmpty) {
       final properties = <String, dynamic>{};
+      final requiredFields = <String>[];
       for (final param in apiParams) {
         final paramName = param.name;
         if (paramName != null) {
           properties[paramName] =
               await generator.mapDartTypeToOpenApiSchema(param.type);
+          if (param.type.nullabilitySuffix != NullabilitySuffix.question) {
+            requiredFields.add(paramName);
+          }
         }
       }
       if (properties.isNotEmpty) {
+        final schema = <String, dynamic>{
+          'type': 'object',
+          'properties': properties,
+        };
+        if (requiredFields.isNotEmpty) {
+          schema['required'] = requiredFields;
+        }
         operation['requestBody'] = {
+          'required': true,
           'content': {
-            'application/json': {
-              'schema': {'type': 'object', 'properties': properties}
-            }
+            'application/json': {'schema': schema}
           }
         };
       }
-      pathItem['post'] = operation;
-    } else {
+    } else if (apiParams.isNotEmpty) {
+      // GET with only primitive params → query parameters
       final openApiParameters = <Map<String, dynamic>>[];
       for (final param in apiParams) {
         final paramName = param.name;
@@ -1011,10 +1124,9 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
       if (openApiParameters.isNotEmpty) {
         operation['parameters'] = openApiParameters;
       }
-      pathItem['get'] = operation;
     }
 
-    // FIX: Use .declaredElement which is more robust
+    // Build response schema from return type.
     final DartType? returnTypeFromElement =
         node.declaredFragment?.element.returnType;
     Map<String, dynamic> responseSchema = {};
@@ -1025,7 +1137,6 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
           finalType.typeArguments.isNotEmpty) {
         finalType = finalType.typeArguments.first;
       }
-      // FIX: Use modern .element property
       if (!finalType.isDartCoreNull &&
           finalType.element?.displayName != 'void') {
         responseSchema = await generator.mapDartTypeToOpenApiSchema(finalType);
@@ -1039,8 +1150,16 @@ class _EndpointVisitor extends RecursiveAstVisitor<void> {
           'content': {
             'application/json': {'schema': responseSchema}
           }
-      }
+      },
+      '400': {'description': 'Bad request'},
+      '500': {'description': 'Internal server error'},
     };
+
+    // Use the effective HTTP method. If GET was inferred but params are complex,
+    // fall back to POST since Serverpod can't serve GET with complex body params.
+    final effectiveMethod =
+        (httpMethod == 'get' && hasComplexParams) ? 'post' : httpMethod;
+    pathItem[effectiveMethod] = operation;
 
     generator._paths[path] = pathItem;
   }

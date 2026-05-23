@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface CodeBlockProps {
   language: string;
@@ -15,21 +15,46 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   showLineNumbers = true,
   fileName,
 }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="rounded-lg overflow-hidden my-4">
+    <div className="rounded-xl overflow-hidden my-4 border border-white/5 glass-light group">
       {fileName && (
-        <div className="bg-gray-800 text-gray-200 px-4 py-2 text-sm font-mono border-b border-gray-700">
-          {fileName}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+          <span className="text-xs font-mono text-gray-500">{fileName}</span>
+          <button
+            onClick={handleCopy}
+            className="text-xs text-gray-500 hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      )}
+      {!fileName && (
+        <div className="flex justify-end px-4 py-1">
+          <button
+            onClick={handleCopy}
+            className="text-xs text-gray-500 hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
         </div>
       )}
       <SyntaxHighlighter
         language={language}
-        style={atomDark}
+        style={vscDarkPlus}
         showLineNumbers={showLineNumbers}
         wrapLines={true}
         customStyle={{
           margin: 0,
-          borderRadius: fileName ? '0 0 0.5rem 0.5rem' : '0.5rem',
+          background: 'transparent',
+          fontSize: '0.85rem',
         }}
       >
         {code}

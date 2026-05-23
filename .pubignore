@@ -1,0 +1,8 @@
+# Exclude docs site from published package
+serverpod_swagger_docs/
+
+# Exclude unnecessary files
+.DS_Store
+*.DS_Store
+commands.md
+documentation.md

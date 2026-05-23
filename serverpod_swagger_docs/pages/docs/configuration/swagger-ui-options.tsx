@@ -5,187 +5,142 @@ import Link from 'next/link';
 export default function SwaggerUIOptions() {
   return (
     <div className="prose dark:prose-invert">
-      <h1>Swagger UI Configuration</h1>
-      
+      <h1>Swagger UI Route Configuration</h1>
+
       <p>
-        Serverpod Swagger allows you to customize the Swagger UI interface to match your needs.
-        This page explains the available configuration options for the Swagger UI route.
+        The <code>SwaggerUIRoute</code> class serves Swagger UI as a route on your
+        Serverpod web server. It reads <code>apispec.json</code> from disk on every
+        request, so changes are reflected immediately without restarting the server.
       </p>
 
-      <h2>Basic Configuration</h2>
-      
-      <p>
-        When adding the Swagger UI route to your server, you can customize it with several options:
-      </p>
-      
+      <h2>Basic Setup</h2>
+
       <CodeBlock
         language="dart"
-        code={`pod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/swagger/',\n    apiSpecPath: 'apispec.json',\n    title: 'My API Documentation',\n    customCssUrl: '/custom/swagger.css',\n    customJsUrl: '/custom/swagger.js',\n    enableDeepLinking: true,\n    showExtensions: true,\n    showCommonExtensions: true,\n    defaultModelsExpandDepth: 1,\n    defaultModelExpandDepth: 1,\n    displayOperationId: false,\n    displayRequestDuration: true,\n    filter: true,\n    showMutatedRequest: true,\n    tryItOutEnabled: true,\n    persistAuthorization: true,\n  ),\n);`}
-        fileName="main.dart"
+        code={`import 'dart:io';\nimport 'package:serverpod_swagger/serverpod_swagger.dart';\n\npod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n  ),\n);`}
+        fileName="server.dart"
       />
 
-      <h2>Available Options</h2>
-      
+      <p>
+        With no options, Swagger UI is served at <code>/swagger/</code> and loads
+        the spec from <code>/swagger/apispec.json</code>.
+      </p>
+
+      <h2>Constructor Parameters</h2>
+
       <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700 my-4">
         <thead>
           <tr>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Option</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Description</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Parameter</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Type</th>
             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Default</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Description</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
           <tr>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>projectRoot</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>Directory</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">required</td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">The project root directory where <code>apispec.json</code> is located</td>
+          </tr>
+          <tr>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>mountPath</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">The base path where Swagger UI will be served</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>/swagger/</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>String</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>'/swagger/'</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">URL path where Swagger UI is served (must end with <code>/</code>)</td>
           </tr>
           <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>apiSpecPath</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Path to the OpenAPI specification file</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>apispec.json</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>title</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Title displayed in the Swagger UI</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>Swagger UI</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>customCssUrl</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">URL to a custom CSS file for styling Swagger UI</td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>customSpecPath</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>String?</code></td>
             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>null</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>customJsUrl</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">URL to a custom JavaScript file for extending Swagger UI</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>null</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>enableDeepLinking</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">If set to true, enables deep linking for tags and operations</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>true</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>showExtensions</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Controls the display of vendor extension (x-) fields and values</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>showCommonExtensions</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Controls the display of extensions (pattern, maxLength, minLength, maximum, minimum) fields and values</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>defaultModelsExpandDepth</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">The default expansion depth for models</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>1</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>defaultModelExpandDepth</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">The default expansion depth for the model on the model-example section</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>1</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>displayOperationId</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Controls the display of operationId in operations list</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>displayRequestDuration</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Controls the display of the request duration (in milliseconds) for Try-It-Out requests</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>filter</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">If set, enables filtering. The top bar will show an edit box that you can use to filter the tagged operations that are shown</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>showMutatedRequest</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">If set, uses the mutated request returned from a requestInterceptor to produce the curl command in the UI</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>true</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>tryItOutEnabled</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Controls whether the "Try it out" section should be enabled by default</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>persistAuthorization</code></td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">If set, it persists authorization data and it would not be lost on browser close/refresh</td>
-            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><code>false</code></td>
+            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Override the URL from which Swagger UI loads the spec. Defaults to <code>mountPath + 'apispec.json'</code></td>
           </tr>
         </tbody>
       </table>
 
-      <h2>Custom CSS Styling</h2>
-      
+      <h2>Custom Mount Path</h2>
+
       <p>
-        You can customize the appearance of Swagger UI by providing a custom CSS file. First, create a CSS file in your project's <code>web</code> directory:
+        To serve Swagger UI at a different URL:
       </p>
-      
-      <CodeBlock
-        language="css"
-        code={`.swagger-ui .topbar {\n  background-color: #1a365d;\n}\n\n.swagger-ui .info .title {\n  color: #2c5282;\n}\n\n.swagger-ui .opblock-tag {\n  background-color: #ebf8ff;\n}\n\n.swagger-ui .opblock.opblock-get {\n  border-color: #4299e1;\n  background-color: #ebf8ff;\n}\n\n.swagger-ui .opblock.opblock-post {\n  border-color: #48bb78;\n  background-color: #f0fff4;\n}\n\n.swagger-ui .btn.execute {\n  background-color: #2c5282;\n}`}
-        fileName="web/custom/swagger.css"
-      />
-      
-      <p>Then, reference this file in your Swagger UI route configuration:</p>
-      
+
       <CodeBlock
         language="dart"
-        code={`pod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/swagger/',\n    customCssUrl: '/custom/swagger.css',\n  ),\n);`}
-        fileName="main.dart"
+        code={`pod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/docs/',\n  ),\n);`}
+        fileName="server.dart"
       />
 
-      <h2>Custom JavaScript Extensions</h2>
-      
       <p>
-        You can extend Swagger UI's functionality by providing a custom JavaScript file. First, create a JavaScript file in your project's <code>web</code> directory:
+        The route handles redirects automatically -- visiting <code>/docs</code> redirects
+        to <code>/docs/</code>.
       </p>
-      
-      <CodeBlock
-        language="javascript"
-        code={`// This script will be executed after Swagger UI is initialized\nwindow.onload = function() {\n  // Access the Swagger UI instance\n  const ui = window.ui;\n  \n  // Add a custom authorization button\n  const authButton = document.createElement('button');\n  authButton.innerText = 'Quick Auth';\n  authButton.className = 'btn authorize';\n  authButton.onclick = function() {\n    // Set a predefined token\n    ui.preauthorizeApiKey('BearerAuth', 'YOUR_TEST_TOKEN');\n    console.log('API automatically authenticated with test token');\n  };\n  \n  // Add the button to the topbar\n  const topbar = document.querySelector('.swagger-ui .topbar');\n  if (topbar) {\n    topbar.appendChild(authButton);\n  }\n};`}
-        fileName="web/custom/swagger.js"
-      />
-      
-      <p>Then, reference this file in your Swagger UI route configuration:</p>
-      
+
+      <h2>Custom Spec Path</h2>
+
+      <p>
+        If you want the Swagger UI to load the spec from a different URL (e.g., served
+        by a separate route or an external URL):
+      </p>
+
       <CodeBlock
         language="dart"
-        code={`pod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/swagger/',\n    customJsUrl: '/custom/swagger.js',\n  ),\n);`}
-        fileName="main.dart"
+        code={`pod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    customSpecPath: '/api/v1/spec.json',\n  ),\n);`}
+        fileName="server.dart"
       />
 
-      <h2>Multiple Swagger UI Instances</h2>
-      
+      <h2>ApiSpecRoute</h2>
+
       <p>
-        You can add multiple Swagger UI routes to your server, each with its own configuration and API specification:
+        The <code>ApiSpecRoute</code> class serves just the <code>apispec.json</code> file
+        at a given path, independently of the Swagger UI. This is useful when you want
+        to expose the raw spec at a separate URL:
       </p>
-      
+
       <CodeBlock
         language="dart"
-        code={`// Add a Swagger UI route for the public API\npod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/swagger/public/',\n    apiSpecPath: 'apispec.public.json',\n    title: 'Public API Documentation',\n  ),\n);\n\n// Add a Swagger UI route for the admin API\npod.webServer.addRoute(\n  SwaggerUIRoute(\n    Directory(Directory.current.path),\n    mountPath: '/swagger/admin/',\n    apiSpecPath: 'apispec.admin.json',\n    title: 'Admin API Documentation',\n  ),\n);`}
-        fileName="main.dart"
+        code={`pod.webServer.addRoute(\n  ApiSpecRoute(\n    Directory(Directory.current.path),\n  ),\n  '/apispec.json',\n);`}
+        fileName="server.dart"
       />
+
+      <h2>Swagger UI Features</h2>
+
+      <p>
+        The served Swagger UI page includes these features enabled by default:
+      </p>
+
+      <ul>
+        <li><strong>Deep linking</strong> - Share URLs to specific operations</li>
+        <li><strong>Operation IDs displayed</strong> - Shows the operationId for each endpoint</li>
+        <li><strong>Persist authorization</strong> - Auth tokens survive page refreshes</li>
+        <li><strong>Try it out enabled</strong> - The "Try it out" button is active by default</li>
+        <li><strong>Credentials included</strong> - Requests include cookies/auth headers</li>
+        <li><strong>OAuth2 redirect</strong> - Configured automatically based on the mount path</li>
+      </ul>
+
+      <p>
+        The Swagger UI is loaded from the unpkg CDN (v5.18.2) and is not bundled with the package.
+      </p>
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-4">
+        <p className="text-blue-800 dark:text-blue-200 text-sm">
+          <strong>Note:</strong> The <code>apispec.json</code> file is re-read from disk on
+          every request, so you can regenerate it while the server is running and see
+          changes immediately in the browser.
+        </p>
+      </div>
 
       <h2>Next Steps</h2>
-      
+
       <ul>
         <li>
+          <Link href="/docs/configuration/openapi-generation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+            OpenAPI generation options
+          </Link>
+        </li>
+        <li>
           <Link href="/docs/configuration/authentication" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Add authentication to your API documentation
-          </Link>
-        </li>
-        <li>
-          <Link href="/docs/advanced-usage/custom-schemas" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Define custom schemas
-          </Link>
-        </li>
-        <li>
-          <Link href="/examples" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-            Explore examples
+            Configure authentication
           </Link>
         </li>
       </ul>

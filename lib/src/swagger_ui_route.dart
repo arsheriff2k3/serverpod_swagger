@@ -1,4 +1,4 @@
-// lib/serverpod_swagger.dart
+import 'dart:convert';
 import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:path/path.dart' as p;
@@ -18,9 +18,6 @@ class SwaggerUIRoute extends Route {
   /// The base path where the Swagger UI will be mounted (e.g., '/swagger/').
   final String _mountPath;
 
-  /// The path without trailing slash that will redirect to _mountPath.
-  // final String _redirectPath;
-
   /// The full path to the API specification JSON file.
   final String _specPath;
 
@@ -39,8 +36,9 @@ class SwaggerUIRoute extends Route {
         _projectRoot = projectRoot,
         _mountPath = mountPath,
         _specPath = customSpecPath ?? p.join(mountPath, 'apispec.json'),
-        // The HTML is static, so we can generate it once.
-        _swaggerHtml = _getSwaggerHtml(customSpecPath ?? 'apispec.json');
+        // Use the absolute spec path so it works from both /swagger and /swagger/
+        _swaggerHtml = _getSwaggerHtml(
+            customSpecPath ?? p.join(mountPath, 'apispec.json'));
 
   bool matchesMountPath(String path, String mountPath) {
     // Remove any trailing slash for comparison
@@ -70,7 +68,7 @@ class SwaggerUIRoute extends Route {
       final specFile = File(p.join(_projectRoot.path, 'apispec.json'));
       if (await specFile.exists()) {
         final content = await specFile.readAsString();
-        
+
         // Build headers with cache control
         final headers = Headers.build((mh) {
           mh.cacheControl = CacheControlHeader(
@@ -81,7 +79,7 @@ class SwaggerUIRoute extends Route {
           mh['Pragma'] = ['no-cache'];
           mh['Expires'] = ['0'];
         });
-        
+
         return Response.ok(
           body: Body.fromString(content, mimeType: MimeType.json),
           headers: headers,
@@ -120,6 +118,8 @@ class SwaggerUIRoute extends Route {
   /// Returns a complete HTML document with the Swagger UI configured to load
   /// the API specification from the provided [specUrl].
   static String _getSwaggerHtml(String specUrl) {
+    // Encode the URL as a JSON string to prevent XSS via crafted paths.
+    final safeUrl = jsonEncode(specUrl);
     return '''
 <!DOCTYPE html>
 <html lang="en">
@@ -127,26 +127,21 @@ class SwaggerUIRoute extends Route {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Serverpod API - Swagger UI</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.18.2/swagger-ui.css" />
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.18.2/swagger-ui-bundle.js"></script>
   <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
-        url: "$specUrl",
+        url: $safeUrl,
         dom_id: '#swagger-ui',
         deepLinking: true,
-        // Enable all OAuth-related functionality
         oauth2RedirectUrl: window.location.origin + window.location.pathname + 'oauth2-redirect.html',
-        // Show auth buttons at the top
         displayOperationId: true,
-        // Persist auth data in localStorage
         persistAuthorization: true,
-        // Improve the auth UX
         withCredentials: true,
-        // Enable the try it out feature by default
         tryItOutEnabled: true,
       });
       window.ui = ui;

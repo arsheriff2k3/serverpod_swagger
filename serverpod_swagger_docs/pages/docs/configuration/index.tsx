@@ -1,122 +1,212 @@
 import React from 'react';
+import CodeBlock from '@/components/CodeBlock';
 import Link from 'next/link';
 
 export default function Configuration() {
   return (
     <div className="prose dark:prose-invert">
       <h1>Configuration</h1>
-      
+
       <p>
-        This section covers the various configuration options available for Serverpod Swagger.
-        You can customize both the OpenAPI specification generation and the Swagger UI interface
-        to suit your project's needs.
+        Serverpod Swagger can be configured through CLI flags when generating the
+        OpenAPI specification, and through constructor parameters when setting up
+        the route. This page covers all available options.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold mb-2">OpenAPI Generation</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Learn how to configure the OpenAPI specification generation process, including
-            customizing endpoint documentation, HTTP methods, and more.
-          </p>
-          <Link 
-            href="/docs/configuration/openapi-generation" 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-          >
-            Learn more →
-          </Link>
-        </div>
+      <h2>CLI Options</h2>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold mb-2">Swagger UI Options</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Customize the appearance and behavior of the Swagger UI interface, including
-            themes, layout, and interactive features.
-          </p>
-          <Link 
-            href="/docs/configuration/swagger-ui-options" 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-          >
-            Learn more →
-          </Link>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold mb-2">Authentication</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Configure authentication for your API documentation, including OAuth, API keys,
-            and JWT authentication.
-          </p>
-          <Link 
-            href="/docs/configuration/authentication" 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-          >
-            Learn more →
-          </Link>
-        </div>
-      </div>
-
-      <h2 className="mt-12">Configuration Best Practices</h2>
-      
       <p>
-        When configuring Serverpod Swagger for your project, consider the following best practices:
+        All configuration for the OpenAPI spec generation is done via
+        command-line flags passed to <code>dart run serverpod_swagger:generate</code>.
       </p>
-      
-      <ul className="space-y-2">
-        <li>
-          <strong>Keep documentation up-to-date:</strong> Regenerate your OpenAPI specification whenever you make changes to your API endpoints.
-        </li>
-        <li>
-          <strong>Use descriptive documentation:</strong> Provide clear and concise documentation for your endpoints, including parameters, responses, and examples.
-        </li>
-        <li>
-          <strong>Organize endpoints logically:</strong> Group related endpoints together using tags to make your API documentation easier to navigate.
-        </li>
-        <li>
-          <strong>Include authentication information:</strong> Document authentication requirements for your API to help users understand how to authenticate their requests.
-        </li>
-        <li>
-          <strong>Provide examples:</strong> Include example requests and responses to help users understand how to use your API.
-        </li>
+
+      <table className="table-auto w-full text-sm">
+        <thead>
+          <tr>
+            <th className="text-left p-2">Flag</th>
+            <th className="text-left p-2">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="p-2"><code>--base-url=URL</code></td>
+            <td className="p-2">Set the server URL in the spec (e.g., <code>http://localhost:8082</code>)</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--auth=TYPE</code></td>
+            <td className="p-2">Add an authentication scheme. Supported types: <code>jwt</code>, <code>apikey</code>, <code>basic</code>, <code>oauth2</code></td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--secure-endpoints=a,b</code></td>
+            <td className="p-2">Comma-separated list of endpoints or paths to mark as secured (e.g., <code>users,admin/delete</code>)</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--unsecure-endpoints=a,b</code></td>
+            <td className="p-2">Comma-separated list of endpoints or paths to mark as unsecured</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--http-method=/path:method</code></td>
+            <td className="p-2">Override the HTTP method for a specific path (e.g., <code>--http-method=/users/getAll:get</code>)</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--update</code></td>
+            <td className="p-2">Update an existing <code>apispec.json</code> instead of regenerating from scratch</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--verbose</code></td>
+            <td className="p-2">Print detailed output during generation</td>
+          </tr>
+          <tr>
+            <td className="p-2"><code>--unauth</code></td>
+            <td className="p-2">Globally remove all security from every endpoint</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Authentication Examples</h3>
+
+      <CodeBlock
+        language="bash"
+        code={`# JWT auth on all endpoints
+dart run serverpod_swagger:generate --auth=jwt
+
+# JWT auth, but keep login and register public
+dart run serverpod_swagger:generate --auth=jwt --unsecure-endpoints=auth/login,auth/register
+
+# API key auth, only secure admin endpoints
+dart run serverpod_swagger:generate --auth=apikey --secure-endpoints=admin
+
+# Remove all auth from an existing spec
+dart run serverpod_swagger:generate --update --unauth`}
+        showLineNumbers={false}
+      />
+
+      <h3>HTTP Method Overrides</h3>
+
+      <p>
+        HTTP methods are inferred from method names automatically, but you can
+        override specific paths.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`# Override a single path
+dart run serverpod_swagger:generate --http-method=/users/getAll:get
+
+# Override multiple paths
+dart run serverpod_swagger:generate \\
+  --http-method=/users/sync:post \\
+  --http-method=/data/export:get`}
+        showLineNumbers={false}
+      />
+
+      <h2>Route Configuration</h2>
+
+      <p>
+        The <code>SwaggerUIRoute</code> constructor accepts the following parameters:
+      </p>
+
+      <CodeBlock
+        language="dart"
+        code={`SwaggerUIRoute(
+  Directory projectRoot, {
+  String mountPath = '/swagger/',
+  String? customSpecPath,
+})`}
+        showLineNumbers={false}
+      />
+
+      <ul>
+        <li><strong>projectRoot</strong> -- The directory containing <code>apispec.json</code> (typically <code>Directory.current</code>)</li>
+        <li><strong>mountPath</strong> -- The URL path where Swagger UI is served. Must end with a trailing slash. Defaults to <code>/swagger/</code></li>
+        <li><strong>customSpecPath</strong> -- Override the URL from which Swagger UI loads the API spec. When not provided, defaults to <code>apispec.json</code> relative to the mount path</li>
       </ul>
 
-      <h2 className="mt-8">Related Topics</h2>
-      
-      <ul className="space-y-2">
+      <p>
+        A separate <code>ApiSpecRoute</code> class is available for serving
+        <code> apispec.json</code> at an independent path:
+      </p>
+
+      <CodeBlock
+        language="dart"
+        code={`ApiSpecRoute(Directory projectRoot)`}
+        showLineNumbers={false}
+      />
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-4">
+        <p className="text-blue-800 dark:text-blue-200 text-sm">
+          <strong>Tip:</strong> For details on custom mount paths and separating
+          the API spec route, see the{" "}
+          <Link href="/docs/configuration/custom-paths" className="underline">
+            Custom Paths
+          </Link>{" "}
+          guide.
+        </p>
+      </div>
+
+      <h2>Programmatic API</h2>
+
+      <p>
+        You can also build OpenAPI specs programmatically using the exported
+        models and functions:
+      </p>
+
+      <CodeBlock
+        language="dart"
+        code={`import 'package:serverpod_swagger/serverpod_swagger.dart';
+
+final spec = SwaggerSpec();
+final endpoint = SwaggerEndpoint('greeting');
+final method = SwaggerMethod('hello');
+method.parameters['name'] = SwaggerParameter(
+  name: 'name',
+  type: 'String',
+  isNullable: false,
+);
+method.returnType = 'String';
+endpoint.methods['hello'] = method;
+spec.endpoints['greeting'] = endpoint;
+
+// Generate the OpenAPI map or JSON string
+final map = generateOpenApiMap(spec, baseUrl: 'http://localhost:8082');
+final json = generateOpenApiJson(spec, baseUrl: 'http://localhost:8082');
+
+// Infer HTTP method from a name
+final httpMethod = inferHttpMethod('getUserById'); // returns 'get'`}
+        fileName="example.dart"
+      />
+
+      <h2>Related Pages</h2>
+
+      <ul>
         <li>
-          <Link 
-            href="/docs/advanced-usage/custom-schemas" 
+          <Link
+            href="/docs/configuration/custom-paths"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
-            Custom Schema Definitions
+            Custom Paths
           </Link>
-          {" "}- Define custom schemas for your API documentation
+          {" "}- Mount Swagger UI at a custom path and serve the spec separately
         </li>
         <li>
-          <Link 
-            href="/docs/advanced-usage/response-examples" 
+          <Link
+            href="/docs/basic-usage"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
-            Response Examples
+            Basic Usage
           </Link>
-          {" "}- Add examples to your API responses
+          {" "}- Step-by-step integration guide
         </li>
         <li>
-          <Link 
-            href="/examples" 
+          <Link
+            href="/examples"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
             Examples
           </Link>
-          {" "}- See practical examples of Serverpod Swagger in action
+          {" "}- Practical code examples
         </li>
       </ul>
-
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-8">
-        <p className="text-blue-800 dark:text-blue-200 text-sm">
-          <strong>Tip:</strong> You can automate the OpenAPI specification generation process by adding it to your build pipeline or using a file watcher to regenerate the specification whenever your code changes.
-        </p>
-      </div>
     </div>
   );
 }
