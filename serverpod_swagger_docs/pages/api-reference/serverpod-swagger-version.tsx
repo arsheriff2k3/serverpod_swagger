@@ -25,7 +25,7 @@ export default function ServerpodSwaggerVersion() {
           <tr>
             <td><code>version</code></td>
             <td><code>static const String</code></td>
-            <td><code>&apos;1.0.0&apos;</code></td>
+            <td><code>&apos;1.0.1&apos;</code></td>
           </tr>
           <tr>
             <td><code>minServerpodVersion</code></td>
@@ -40,7 +40,7 @@ export default function ServerpodSwaggerVersion() {
       <CodeBlock
         language="dart"
         code={`class ServerpodSwaggerVersion {
-  static const String version = '1.0.0';
+  static const String version = '1.0.1';
   static const String minServerpodVersion = '3.4.2';
 }`}
         showLineNumbers={false}

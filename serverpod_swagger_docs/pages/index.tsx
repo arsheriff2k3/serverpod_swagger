@@ -72,7 +72,7 @@ export default function Home() {
       {/* Hero */}
       <section className="text-center py-16 relative">
         <div className="inline-block mb-6">
-          <span className="badge">v1.0.0 Stable Release</span>
+          <span className="badge">v1.0.1 Stable Release</span>
         </div>
         <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
           <span className="gradient-text">Swagger UI</span>

@@ -1,3 +1,9 @@
+## 1.0.1
+
+- **Updated**: Widened `analyzer` constraint to `>=10.2.0 <14.0.0` for better pub.dev scoring
+- **Updated**: README and documentation refreshed to match current codebase
+- **Added**: SEO metadata and favicon for documentation site
+
 ## 1.0.0
 
 - **Stable release** for Serverpod >=3.4.2 (tested up to 3.4.8)
