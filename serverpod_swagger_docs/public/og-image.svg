@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="400" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accent)"/>
+  <text x="100" y="220" font-family="system-ui, sans-serif" font-weight="800" font-size="72" fill="white">Serverpod Swagger</text>
+  <text x="100" y="300" font-family="system-ui, sans-serif" font-weight="400" font-size="36" fill="#9ca3af">OpenAPI 3.0 Documentation Generator</text>
+  <text x="100" y="380" font-family="monospace" font-weight="600" font-size="28" fill="#6366f1">v1.0.0 Stable</text>
+  <rect x="100" y="440" width="160" height="50" rx="8" fill="#6366f1" opacity="0.15"/>
+  <text x="180" y="472" text-anchor="middle" font-family="monospace" font-size="20" fill="#818cf8">Dart</text>
+  <rect x="280" y="440" width="200" height="50" rx="8" fill="#6366f1" opacity="0.15"/>
+  <text x="380" y="472" text-anchor="middle" font-family="monospace" font-size="20" fill="#818cf8">Serverpod</text>
+  <rect x="500" y="440" width="200" height="50" rx="8" fill="#6366f1" opacity="0.15"/>
+  <text x="600" y="472" text-anchor="middle" font-family="monospace" font-size="20" fill="#818cf8">OpenAPI 3.0</text>
+  <text x="100" y="570" font-family="system-ui, sans-serif" font-size="22" fill="#4b5563">pub.dev/packages/serverpod_swagger</text>
+</svg>

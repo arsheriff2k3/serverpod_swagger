@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Left brace pushed to far left -->
+  <path d="M14 20 Q9 20 9 25 L9 29 Q9 32 6 32 Q9 32 9 35 L9 39 Q9 44 14 44" stroke="rgba(255,255,255,0.35)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Right brace pushed to far right -->
+  <path d="M50 20 Q55 20 55 25 L55 29 Q55 32 58 32 Q55 32 55 35 L55 39 Q55 44 50 44" stroke="rgba(255,255,255,0.35)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- API text centered -->
+  <text x="32" y="36" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="14" fill="white">API</text>
+</svg>
