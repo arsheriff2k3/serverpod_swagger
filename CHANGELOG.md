@@ -1,3 +1,7 @@
+## 0.4.0
+
+- **BREAKING**: Upgraded to Serverpod 3.4.2 (from 3.2.3)
+
 ## 0.3.1
 
 - **NEW**: Added `customSpecPath` parameter to `SwaggerUIRoute` for custom API specification URLs
@@ -8,7 +12,6 @@
 - Updated documentation with examples for both default and custom path configurations
 
 ## 0.3.0
-
 
 - **BREAKING**: Upgraded to Serverpod 3.2.3 (from 2.9.0)
 - Updated analyzer package to 10.0.1 (from 7.5.2)

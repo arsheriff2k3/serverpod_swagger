@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_swagger/serverpod_swagger.dart';
 
+import 'src/generated/endpoints.dart';
+import 'src/generated/protocol.dart';
+
 /// Example server setup with Swagger UI
 /// 
 /// This example shows two scenarios:
@@ -35,7 +38,7 @@ void main(List<String> args) async {
   // API Spec at: http://localhost:8082/apispec.json (root)
   
   // Uncomment these lines to use custom path:
-  /*
+  
   final customSwaggerRoute = SwaggerUIRoute(
     projectRoot,
     mountPath: '/custom/swagger/',
@@ -46,7 +49,6 @@ void main(List<String> args) async {
   // IMPORTANT: You MUST also add this route to serve apispec.json at root
   final apiSpecRoute = ApiSpecRoute(projectRoot);
   pod.webServer.addRoute(apiSpecRoute, '/apispec.json');
-  */
 
   // Start the server
   await pod.start();

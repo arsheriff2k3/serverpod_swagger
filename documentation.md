@@ -4,19 +4,19 @@
 
 The Serverpod Swagger generator supports various command-line arguments to customize your OpenAPI specification. Here's a complete reference of all available options:
 
-| Argument | Description | Example |
-|----------|-------------|--------|
-| `--base-url=<URL>` | Sets the base URL for the API server | `--base-url=http://localhost:8080` |
-| `--auth=<TYPE>` | Specifies the authentication type (jwt, bearer, apikey, basic, oauth2) | `--auth=jwt` |
-| `--auth-description=<TEXT>` | Custom description for the authentication method | `--auth-description="Custom API key header"` |
-| `--secure-endpoints=<LIST>` | Comma-separated list of endpoints to secure | `--secure-endpoints=users/profile,auth/login` |
-| `--unsecure-endpoints=<LIST>` | Comma-separated list of endpoints to explicitly leave unsecured | `--unsecure-endpoints=public/info,status/check` |
-| `--secure-single-url=<URL>` | Secures a single specific URL endpoint | `--secure-single-url=/auth/login` |
-| `--unsecure-single-url=<URL>` | Explicitly leaves a single URL endpoint unsecured | `--unsecure-single-url=/public/info` |
-| `--http-method=<PATH:METHOD>` | Sets a specific HTTP method for an endpoint | `--http-method=users/create:post` |
-| `--unauth` or `--disable-auth` | Globally disables authentication for all endpoints | `--disable-auth` |
-| `--verbose` | Displays detailed information during generation | `--verbose` |
-| `--update` | Updates an existing specification instead of regenerating | `--update` |
+| Argument                       | Description                                                            | Example                                         |
+| ------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------- |
+| `--base-url=<URL>`             | Sets the base URL for the API server                                   | `--base-url=http://localhost:8082`              |
+| `--auth=<TYPE>`                | Specifies the authentication type (jwt, bearer, apikey, basic, oauth2) | `--auth=jwt`                                    |
+| `--auth-description=<TEXT>`    | Custom description for the authentication method                       | `--auth-description="Custom API key header"`    |
+| `--secure-endpoints=<LIST>`    | Comma-separated list of endpoints to secure                            | `--secure-endpoints=users/profile,auth/login`   |
+| `--unsecure-endpoints=<LIST>`  | Comma-separated list of endpoints to explicitly leave unsecured        | `--unsecure-endpoints=public/info,status/check` |
+| `--secure-single-url=<URL>`    | Secures a single specific URL endpoint                                 | `--secure-single-url=/auth/login`               |
+| `--unsecure-single-url=<URL>`  | Explicitly leaves a single URL endpoint unsecured                      | `--unsecure-single-url=/public/info`            |
+| `--http-method=<PATH:METHOD>`  | Sets a specific HTTP method for an endpoint                            | `--http-method=users/create:post`               |
+| `--unauth` or `--disable-auth` | Globally disables authentication for all endpoints                     | `--disable-auth`                                |
+| `--verbose`                    | Displays detailed information during generation                        | `--verbose`                                     |
+| `--update`                     | Updates an existing specification instead of regenerating              | `--update`                                      |
 
 ## Authentication and Endpoint Security
 
@@ -36,8 +36,9 @@ You can specify one of the following authentication types using the `--auth=<TYP
 - **custom**: Any other authentication type (defaults to apiKey in Authorization header)
 
 Example:
+
 ```bash
-dart run serverpod_swagger:generate --auth=jwt --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --auth=jwt --base-url=http://localhost:8082
 ```
 
 #### Security Policy Rules
@@ -66,7 +67,7 @@ The Serverpod Swagger package allows you to secure specific URL endpoints with a
 To secure a specific URL endpoint, use the `--secure-single-url` parameter when generating your OpenAPI specification:
 
 ```bash
-dart run serverpod_swagger:generate --auth=jwt --secure-single-url=/jwtAuth/getCurrentUser --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --auth=jwt --secure-single-url=/jwtAuth/getCurrentUser --base-url=http://localhost:8082
 ```
 
 This command will:
@@ -80,7 +81,7 @@ This command will:
 If you have an endpoint that requires JWT authentication with an authorization token in the header (like `/jwtAuth/getCurrentUser`), you can generate the API specification like this:
 
 ```bash
-dart run serverpod_swagger:generate --auth=jwt --secure-single-url=/jwtAuth/getCurrentUser --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --auth=jwt --secure-single-url=/jwtAuth/getCurrentUser --base-url=http://localhost:8082
 ```
 
 When accessing the Swagger UI, you'll need to:
@@ -94,7 +95,7 @@ When accessing the Swagger UI, you'll need to:
 If you need to secure multiple specific URL endpoints, you can use the `--secure-endpoints` parameter instead:
 
 ```bash
-dart run serverpod_swagger:generate --auth=jwt --secure-endpoints=jwtAuth/getCurrentUser,users/profile --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --auth=jwt --secure-endpoints=jwtAuth/getCurrentUser,users/profile --base-url=http://localhost:8082
 ```
 
 ### Customizing HTTP Methods
@@ -106,10 +107,11 @@ By default, all endpoints in the OpenAPI specification are generated with the HT
 To specify a custom HTTP method for an endpoint, use the following format:
 
 ```bash
-dart run serverpod_swagger:generate --http-method=endpoint/method:HTTP_METHOD --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --http-method=endpoint/method:HTTP_METHOD --base-url=http://localhost:8082
 ```
 
 Where:
+
 - `endpoint/method` is the path to your endpoint (with or without a leading slash)
 - `HTTP_METHOD` is the HTTP method you want to use (e.g., POST, PUT, DELETE, PATCH)
 
@@ -118,10 +120,11 @@ Where:
 If you want to see detailed information about the OpenAPI specification generation process, you can use the `--verbose` flag:
 
 ```bash
-dart run serverpod_swagger:generate --base-url=http://localhost:8080 --verbose
+dart run serverpod_swagger:generate --base-url=http://localhost:8082 --verbose
 ```
 
 This will display additional information such as:
+
 - The path to the generated specification file
 - The number of endpoints included in the specification
 - Security schemes defined in the specification
@@ -139,6 +142,7 @@ dart run serverpod_swagger:generate --update --http-method=greeting/hello:post
 ```
 
 This command will:
+
 1. Read the existing `apispec.json` file
 2. Apply the specified changes (in this case, changing the HTTP method for the `greeting/hello` endpoint to POST)
 3. Save the updated specification back to the file
@@ -178,24 +182,28 @@ The update process is designed to be non-destructive, meaning it won't remove or
 
 The `--update` flag can be combined with any other parameter to modify specific aspects of your API documentation:
 
-```bash
+````bash
 # Update HTTP method and secure a specific endpoint```bash
 dart run serverpod_swagger:generate --update --http-method=users/profile:put --secure-single-url=/users/profile
-```
+````
+
 # Update base URL only
+
 dart run serverpod_swagger:generate --update --base-url=https://api.example.com
 
 # Update authentication type
+
 dart run serverpod_swagger:generate --update --auth=apikey
-```
+
+````
 
 This approach is more efficient and convenient for making incremental changes to your API documentation.
 
 #### Example: Setting a POST Method for a Profile Endpoint
 
 ```bash
-dart run serverpod_swagger:generate --http-method=profile/user:post --base-url=http://localhost:8080
-```
+dart run serverpod_swagger:generate --http-method=profile/user:post --base-url=http://localhost:8082
+````
 
 ### Automatic HTTP Method Detection
 
@@ -224,6 +232,7 @@ Future<void> postUser(Session session, UserPost request) async {
 ```
 
 The generator will automatically:
+
 1. Set this as a POST method
 2. Include the `request` parameter in the JSON request body
 3. Exclude the `request` parameter from query parameters
@@ -262,18 +271,18 @@ This information is used to create detailed OpenAPI schema definitions that accu
 The generator maps Dart and YAML types to OpenAPI schema types:
 
 | Dart/YAML Type | OpenAPI Schema Type |
-|----------------|---------------------|
-| String | string |
-| int | integer (int64) |
-| double | number (double) |
-| bool | boolean |
-| DateTime | string (date-time) |
-| ByteData | string (byte) |
-| Duration | string |
-| Uri | string (uri) |
-| List<T> | array |
-| Map<K,V> | object |
-| Custom classes | $ref to schema |
+| -------------- | ------------------- |
+| String         | string              |
+| int            | integer (int64)     |
+| double         | number (double)     |
+| bool           | boolean             |
+| DateTime       | string (date-time)  |
+| ByteData       | string (byte)       |
+| Duration       | string              |
+| Uri            | string (uri)        |
+| List<T>        | array               |
+| Map<K,V>       | object              |
+| Custom classes | $ref to schema      |
 
 #### Dependency Resolution
 
@@ -317,7 +326,7 @@ dart run serverpod_swagger:generate \
   --http-method=profile/user:post \
   --http-method=users/create:put \
   --http-method=documents/delete:delete \
-  --base-url=http://localhost:8080
+  --base-url=http://localhost:8082
 ```
 
 ### Endpoint Detection and Path Generation
@@ -370,18 +379,18 @@ void main(List<String> args) async {
     Protocol(),
     Endpoints(),
   );
-  
+
   // Get the project root directory
   final projectRoot = Directory(Directory.current.path);
-  
+
   // Create a SwaggerUIRoute
   final swaggerRoute = SwaggerUIRoute(projectRoot);
-  
+
   // Add the route to your web server
   // IMPORTANT: For Serverpod 3.2.3+, use '/**' for the tail match
   // and ensure this is added BEFORE any catch-all static routes ('/*').
   pod.webServer.addRoute(swaggerRoute, '/swagger/**');
-  
+
   // Start the server
   await pod.start();
 }

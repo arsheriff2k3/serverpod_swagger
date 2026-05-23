@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import CodeBlock from '@/components/CodeBlock';
+import React from "react";
+import Link from "next/link";
+import CodeBlock from "@/components/CodeBlock";
 
 export default function Examples() {
   return (
@@ -8,14 +8,17 @@ export default function Examples() {
       <h1>Serverpod Swagger Examples</h1>
 
       <p>
-        This page provides practical examples of how to use Serverpod Swagger in different scenarios.
-        Each example includes code snippets and explanations to help you implement Swagger UI in your Serverpod application.
+        This page provides practical examples of how to use Serverpod Swagger in
+        different scenarios. Each example includes code snippets and
+        explanations to help you implement Swagger UI in your Serverpod
+        application.
       </p>
 
       <h2>Basic Example</h2>
 
       <p>
-        This example shows the minimal setup required to add Swagger UI to your Serverpod server.
+        This example shows the minimal setup required to add Swagger UI to your
+        Serverpod server.
       </p>
 
       <CodeBlock
@@ -42,13 +45,16 @@ void run(List<String> args) async {
       />
 
       <p>
-        With this setup, you can access the Swagger UI at <code>http://localhost:8082/swagger/</code> after generating the OpenAPI specification with <code>dart run serverpod_swagger:generate</code>.
+        With this setup, you can access the Swagger UI at{" "}
+        <code>http://localhost:8082/swagger/</code> after generating the OpenAPI
+        specification with <code>dart run serverpod_swagger:generate</code>.
       </p>
 
       <h2>Complete Server Example</h2>
 
       <p>
-        This example shows a more complete server setup with multiple routes and Swagger UI.
+        This example shows a more complete server setup with multiple routes and
+        Swagger UI.
       </p>
 
       <CodeBlock
@@ -97,7 +103,7 @@ dart run serverpod_swagger:generate`}
       <CodeBlock
         language="bash"
         code={`# Specify base URL
-dart run serverpod_swagger:generate --base-url=http://localhost:8080
+dart run serverpod_swagger:generate --base-url=http://localhost:8082
 
 # Add authentication
 dart run serverpod_swagger:generate --auth=jwt
@@ -116,20 +122,22 @@ dart run serverpod_swagger:generate --update`}
 
       <CodeBlock
         language="bash"
-        code={`dart run serverpod_swagger:generate --auth=bearer --base-url=http://localhost:8080`}
+        code={`dart run serverpod_swagger:generate --auth=bearer --base-url=http://localhost:8082`}
         showLineNumbers={false}
       />
 
       <h3>Step 2: Use the Swagger UI to test authenticated endpoints</h3>
 
       <p>
-        After generating the spec with authentication, you can use the "Authorize" button in Swagger UI to provide your authentication token.
+        After generating the spec with authentication, you can use the
+        "Authorize" button in Swagger UI to provide your authentication token.
       </p>
 
       <h2>Custom HTTP Methods Example</h2>
 
       <p>
-        By default, all endpoints use POST. You can customize HTTP methods for specific endpoints:
+        By default, all endpoints use POST. You can customize HTTP methods for
+        specific endpoints:
       </p>
 
       <CodeBlock
@@ -145,9 +153,7 @@ dart run serverpod_swagger:generate \\
 
       <h2>Development Workflow</h2>
 
-      <p>
-        During development, you can use this workflow for live updates:
-      </p>
+      <p>During development, you can use this workflow for live updates:</p>
 
       <CodeBlock
         language="bash"
@@ -162,7 +168,9 @@ dart run serverpod_swagger:generate
       />
 
       <p>
-        The Swagger UI route automatically re-reads the <code>apispec.json</code> file on every request, so you'll see your changes immediately after regenerating the spec.
+        The Swagger UI route automatically re-reads the{" "}
+        <code>apispec.json</code> file on every request, so you'll see your
+        changes immediately after regenerating the spec.
       </p>
 
       <h2>More Resources</h2>
@@ -171,22 +179,34 @@ dart run serverpod_swagger:generate
 
       <ul>
         <li>
-          <Link href="/docs/basic-usage" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <Link
+            href="/docs/basic-usage"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          >
             Basic Usage Guide
           </Link>
         </li>
         <li>
-          <Link href="/docs/configuration/openapi-generation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <Link
+            href="/docs/configuration/openapi-generation"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          >
             OpenAPI Generation Options
           </Link>
         </li>
         <li>
-          <Link href="/docs/configuration/authentication" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <Link
+            href="/docs/configuration/authentication"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          >
             Authentication Configuration
           </Link>
         </li>
         <li>
-          <Link href="/api-reference/cli-options" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <Link
+            href="/api-reference/cli-options"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          >
             CLI Options Reference
           </Link>
         </li>
